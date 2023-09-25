@@ -1,0 +1,563 @@
+---
+title: "Update to Recharge Extrapolation"
+subtitle: "Prepared for the TRCA"
+author: "Oak Ridges Moraine Groundwater Program"
+date: "`r gsub(' 0', ' ', format(Sys.time(), '%d %B, %Y'))`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(ggspatial)
+library(scattermore)
+library(cowplot)
+library(gridExtra)
+library(dplyr)
+library(sf)
+library(raster)
+library(rnaturalearth)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Introduction
+
+The latest official regional recharge estimation was the so-called York Tier-3 model [YT3 (2013)](https://www.ctcswp.ca/app/uploads/2017/05/RPT_201311_Earthfx_York_Tier3WBLocAreaRiskAssFNL.pdf). Part of the delivered model package was the long-term average recharge (mm/yr) which was applied (as model input) to the steady-state groundwater flow model used for source water protection planning.
+
+Unfortunately, the YT3 model boundaries did not include the TRCA jurisdiction in its entirety.
+
+
+```{r dataload.boundaries, echo=FALSE, message=FALSE, warning=FALSE}
+TRCA.bnd <- st_read('E:/Sync/@gis/Boundaries/ConservationAuthorities.shp', quiet=TRUE, crs = 26917) %>% st_transform(crs = 4326) %>% 
+  filter(Name=="Toronto and Region Conservation Authority")
+TEGWFM18.bnd <- st_read('shp/TRCA_expansion-boundary.shp', quiet=TRUE, crs = 26917) %>% st_transform(crs = 4326)
+YT3.bnd <- st_read("O:/internal/TRCA/TEGWFM18/shapefiles/YT3100_active_bound.shp", quiet=TRUE, crs = 26917) %>% st_transform(crs = 4326)
+
+ontario_sf <- ne_states(c("canada")) %>%
+  st_as_sf(coords) %>%
+  dplyr::filter(name=="Ontario")
+```
+
+```{r boundaries, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(TRCA.bnd) +
+  theme_void() +
+  theme(panel.background = element_rect(fill = "lightblue"),
+        legend.position = c(.05,.95),
+        legend.justification = c(0,1),
+        legend.title = element_blank(),
+        # legend.background = element_blank(),
+        legend.background = element_rect(fill = alpha("white",.45),colour=NA), 
+        axis.title = element_blank()) +
+  annotation_map_tile(zoom=9) +
+  # geom_sf(data=ontario_sf) +
+  geom_sf(data=TEGWFM18.bnd, aes(color='Extended (TEGWFM18) model boundary',
+                                 linetype='Extended (TEGWFM18) model boundary',
+                                 fill='Extended (TEGWFM18) model boundary'), linewidth=1) +
+  geom_sf(data=YT3.bnd, aes(color='YT3 model boundary',
+                            linetype='YT3 model boundary',
+                            fill='YT3 model boundary'), linewidth=1) +
+  geom_sf(aes(color='TRCA',linetype='TRCA', fill='TRCA'), linewidth=1) +
+  coord_sf(xlim = c(-80.2,-78.9), ylim = c(43.55,44.3)) +
+  scale_color_manual("leg1", values =  c("#7aa457","#a46cb7","#cb6a49")) +
+  scale_linetype_manual("leg1", values = c("solid","dotted","dashed")) +
+  scale_fill_manual("leg1", values=c('transparent',alpha("blue",.05),"transparent"))
+```
+
+<br>
+
+A decision was made in 2018 to expanded the York Tier-3 model to:
+
+1. extend the eastern model boundary beyond the Carruther's Creek watershed boundary for its watershed plan
+1. expand westward to include Mimico and Etobicoke creeks (later used for their watershed plans)
+1. ensure that the "expanded" model boundary allows for cross-watershed boundary flux
+
+> The expanded version can to be known as the *TRCA Expanded Groundwater Flow Model*-2018 (TEGWFM18)
+
+## York Tier-3 (YT3)
+
+In order to complete groundwater modelling portion of a watershed plan, an estimation of groundwater recharge is needed. Simulated groundwater recharge delivered with the YT3 model was constrained to the YT3 model boundary. Notice below how the modelled recharge does not extend to the expanded boundary:
+
+
+```{r recharge.YT3, echo=FALSE, message=FALSE, warning=FALSE}
+yt3rch.df <- as.data.frame(stars::read_stars("raster/VL-YT3ss_RCH.bil"), xy=TRUE) %>% 
+  na.omit() %>%
+  rename(mm.per.year = 'VL.YT3ss_RCH.bil')
+
+ggplot(TEGWFM18.bnd %>% st_transform(crs = 26917)) +
+  theme_void() +
+  theme(legend.title = element_blank()) +
+  geom_sf(fill=alpha('grey95',.5)) +
+  geom_raster(data=yt3rch.df %>% dplyr::filter(mm.per.year<500), aes(x = x, y = y, fill = mm.per.year)) +
+  geom_sf(fill=NA) +
+  # geom_sf(data=YT3.bnd, fill=NA) +
+  # geom_polygon(data=TEGWFM18.bnd, aes(x = long, y = LAT)) +
+  labs(x=NULL,y=NULL,title="York Tier-3", subtitle ="Annual Average Groundwater Recharge (mm/yr)") +
+  scale_fill_gradientn(colours=c("#f0f9e8","#7bccc4","#43a2ca","#0868ac")) 
+  # coord_sf(xlim = c(300000,7000000), ylim = c(4800000,5000000))
+  # coord_fixed()
+
+```
+
+
+
+<br>
+
+## Watershed plans (2018-)
+
+
+There are mainly two ways one could expand recharge estimates:
+
+1. building a new hydrologic model (expensive)
+2. performing a GIS translation exercise (back of the envelope)
+
+
+For both the Carruthers Creek and Etobicoke/Mimico Creeks watershed plans, the latter approach was taken. This involved grouping recharge estimates according to `land use` $+$ `surficial geology` combinations. More details can be found in the November 22, 2018 TRCA memo.
+
+
+
+## Land use
+
+The source of the land use data is: *Ministry of Natural Resources and Forestry, 2019. Southern Ontario Land Resource Information System (SOLRIS) Version 3.0: Data Specifications. Science and Research Branch, April 2019.*
+
+```{r raster.solris, echo=FALSE, message=FALSE, warning=FALSE}
+solris.df <- as.data.frame(stars::read_stars("raster/solrisv3_10_infilled_100_gdTEGWFM18.bil"), xy=TRUE) %>%
+  na.omit() %>%
+  rename(SOLRIS.id = 'solrisv3_10_infilled_100_gdTEGWFM18.bil')
+
+lvls <- sort(unique(solris.df$SOLRIS.id))
+
+p.solris <- ggplot(TEGWFM18.bnd %>% st_transform(crs = 26917)) +
+  theme_void() +
+  theme(legend.position="none") +
+  theme(legend.title = element_blank()) +
+  geom_raster(data=solris.df, aes(x = x, y = y, fill = factor(SOLRIS.id, levels = lvls))) +
+  geom_sf(fill=NA) +
+  labs(x=NULL,y=NULL) +
+  scale_fill_viridis_d()
+
+# https://wilkelab.org/cowplot/articles/plot_grid.html
+title <- ggdraw() + 
+  draw_label(
+    "SOLRIS v3.0 Land Use Mapping",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+plot_row <- plot_grid(p.solris + geom_rect(aes(xmin=610000, xmax=625000, ymin=4840000, ymax=4855000), 
+                                color="red",fill=NA, linewidth=1), p.solris + coord_sf(xlim=c(610000,625000), ylim=c(4840000,4855000)), rel_widths = c(1, 3/4))
+plot_grid(title, plot_row, align = "H", ncol=1, rel_heights = c(0.1, 1))
+```
+
+<br>
+
+## Surficial geology
+
+The source of the surficial geology data is: *Ontario Geological Survey 2010. Surficial geology of southern Ontario; Ontario Geological Survey, Miscellaneous Release— Data 128 – Revised.*
+
+The OGS vector file was converted to raster using [QGIS](https://docs.qgis.org/3.28/en/docs/user_manual/processing_algs/gdal/vectorconversion.html#rasterize-vector-to-raster) targeting the **PERMEABILI** attribute (OGS, 2010) categorized into 8 values:
+
+
+```{r raster.ogs, echo=FALSE, message=FALSE, warning=FALSE}
+ogs.df <- as.data.frame(stars::read_stars("raster/OGSsurfGeo_50_100_gdTEGWFM18.bil"), xy=TRUE) %>%
+  na.omit() %>%
+  rename(permeability = 'OGSsurfGeo_50_100_gdTEGWFM18.bil') %>%
+  mutate(permeability = factor(permeability, levels = seq(1,8)))
+
+ggplot(TEGWFM18.bnd %>% st_transform(crs = 26917)) +
+  theme_void() +
+  theme(legend.title=element_blank()) +
+  geom_raster(data=ogs.df %>% na.omit(), 
+              aes(x = x, y = y, fill = permeability)) +
+  geom_sf(fill=NA, linewidth=1, color='black') +
+  scale_fill_manual(labels = c('Low', 'Low-medium', 'Medium-high', 'High', 'Variable','Fluvial','Organic'), 
+                    values = c('#810f7c', '#8856a7', '#b3cde3', '#edf8fb', '#ffffb2','#253494','#006837')) +
+  labs(title="Relative permeability (OGS, 2010)")
+```
+
+<br>
+
+
+## Grouped recharge
+
+Recharge values collected in the Land Use/Surficial Geology groups are then averaged and re-casted to areas where recharge was unknown.  This recharge value is applied to the TEGWFM18 for all previous watershed planning efforts.  Here's an example from the Etobicoke Creek watershed plan recharge:
+
+```{r recharge.TEGWFM18, echo=FALSE, message=FALSE, warning=FALSE}
+# "E:/OneDrive - Central Lake Ontario Conservation/inout/TRCA/210916 Etobicoke Ck GW modelling/shp/recharge/YT3ss_RCH-scen0.asc"
+etobicoke.df <- as.data.frame(stars::read_stars("O:/internal/TRCA/TEGWFM18/input_MFNWT/TRCA_expansion_RCH.asc"), xy=TRUE) %>%
+  na.omit() %>%
+  rename(rch = 'TRCA_expansion_RCH.asc')
+
+
+p.etobicoke <- ggplot(TRCA.bnd %>% st_transform(crs = 26917)) +
+  theme_void() +
+  theme(legend.title = element_blank()) +
+  geom_raster(data=etobicoke.df %>% dplyr::filter(rch<500), aes(x = x, y = y, fill = rch)) +
+  geom_sf(data=YT3.bnd, fill=NA, color='#cb6a49', linetype='dashed', linewidth=1) +
+  geom_sf(fill=NA, color='black', linewidth=1) +
+  labs(x=NULL,y=NULL) + #,title="TRCA Expanded Groundwater Flow Model, 2018 (TEGWFM18)", subtitle ="Annual Average Groundwater Recharge (mm/yr)") +
+  scale_fill_gradientn(colours=c("#f0f9e8","#7bccc4","#43a2ca","#0868ac")) 
+
+# https://wilkelab.org/cowplot/articles/plot_grid.html
+title <- ggdraw() +
+  draw_label(
+    "TRCA Expanded Groundwater Flow Model, 2018 (TEGWFM18)",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+subtitle <- ggdraw() +
+  draw_label(
+    "Annual Average Groundwater Recharge (mm/yr)",
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+plot_row <- plot_grid(p.etobicoke +
+                      theme(legend.position = 'none') + 
+                      geom_rect(aes(xmin=585000, xmax=605000, ymin=4835000, ymax=4855000), 
+                                color="red",fill=NA, linewidth=1), 
+          p.etobicoke + coord_sf(xlim=c(585000,605000), ylim=c(4835000,4855000)), 
+          align = "H", ncol=2)
+plot_grid(title, subtitle, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .01, .8))
+```
+
+
+Notice in the blown-up section to the right of the above figure, the recharge exhibits greater granularity to the right of the YT3 model boundary (black line) compared to the expanded region (left); this is expected due to the averaging methodology being applied.
+
+Overall, this procedure will simply provide an averaged recharge field, and should not have a large effect on the modelled groundwater flow system. As such, they are sufficient for watershed planning (e.g., groundwater discharge to streams).
+
+
+### SGRA
+
+Enter Significant Groundwater Recharge Areas (SGRAs): This is a source water protection map that is very much affected by granularity in that the greater the granularity, the smaller and numerous the SGRA. With known recharge $g$, SGRAs are defined as:
+
+$$
+  \text{SGRA} = 
+    \begin{cases}
+      \texttt{Yes} & \text{if } g > 1.15\cdot\bar{g} \\
+      \texttt{No}  & \text{otherwise}
+    \end{cases},
+$$
+
+where $\bar{g}$ is the average simulated recharge for a given/representative area.
+
+```{r sgra.TEGWFM18, echo=FALSE, message=FALSE, warning=FALSE}
+# "E:/OneDrive - Central Lake Ontario Conservation/inout/TRCA/210916 Etobicoke Ck GW modelling/shp/recharge/YT3ss_RCH-scen0.asc"
+sgra.TEGWFM18.df <- as.data.frame(stars::read_stars("raster/TEGWFM18_sgra.bil"), xy=TRUE) %>%
+  na.omit() %>%
+  rename(sgra = 'TEGWFM18_sgra.bil')
+
+
+p.sgra.TEGWFM18 <- ggplot(YT3.bnd %>% st_transform(crs = 26917)) +
+  theme_void() +
+  theme(legend.position = 'none') +
+  geom_sf(fill=alpha('grey95',.5)) +
+  geom_raster(data=sgra.TEGWFM18.df, aes(x = x, y = y, fill = sgra)) +
+  geom_sf(fill=NA, color='black', linewidth=1) +
+  labs(x=NULL,y=NULL) + #,title="TRCA Expanded Groundwater Flow Model, 2018 (TEGWFM18)", subtitle ="Annual Average Groundwater Recharge (mm/yr)") +
+  scale_fill_gradientn(colours=c("white","#0868ac")) 
+
+# https://wilkelab.org/cowplot/articles/plot_grid.html
+title <- ggdraw() +
+  draw_label(
+    "TRCA Expanded Groundwater Flow Model, 2018 (TEGWFM18)",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+subtitle <- ggdraw() +
+  draw_label(
+    "Significant Groundwater Recharge Areas (blue)",
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+plot_row <- plot_grid(p.sgra.TEGWFM18 +
+                      geom_rect(aes(xmin=585000, xmax=605000, ymin=4835000, ymax=4855000), 
+                                color="red",fill=NA, linewidth=1), 
+          p.sgra.TEGWFM18 + coord_sf(xlim=c(585000,605000), ylim=c(4835000,4855000)), 
+          align = "H", ncol=2)
+plot_grid(title, subtitle, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .01, .8))
+```
+
+> An obvious edge-matching issue
+
+
+# Proposed Solution
+
+A more-detailed raster extrapolation scheme know as [**"raster regression analysis"**](https://desktop.arcgis.com/en/arcmap/latest/tools/spatial-statistics-toolbox/exploratory-regression.htm). Here, instead of grouping and averaging recharge into Land Use/Surficial Geology bins, land use and surficial geology are used as explanatory variables used to determine a (regression) model fit to the data. In addition to land use and surficial geology, elevations, catchment areas and coordinates are included in the regression analysis.
+
+
+## Elevation
+
+The Digital Elevation Model (DEM) was acquired from the *10m 2006 OMNR Digital Elevation Model - Version 2.0.0 - Provincial Tiled Dataset*:
+
+```{r raster.dem, echo=FALSE, message=FALSE, warning=FALSE}
+dem.df <- as.data.frame(stars::read_stars("raster/owrc20-50-noGreatLake-HC-observations-trim-FINAL-elevation_100_gdTEGWFM18.bil"), xy=TRUE) %>%
+  na.omit() %>%
+  rename(elevation = 'owrc20.50.noGreatLake.HC.observations.trim.FINAL.elevation_100_gdTEGWFM18.bil')
+
+col.dem <- c("#000000","#0000FF","#4D4DFF","#00CCFF","#99CC66","#006633","#999933","#FFFF66","#996633","#FFFFFF")
+
+ggplot(TEGWFM18.bnd %>% st_transform(crs = 26917)) +
+  theme_void() +
+  geom_raster(data=dem.df %>% na.omit(), 
+              aes(x = x, y = y, fill = elevation)) +
+  geom_sf(fill=NA, linewidth=1, color='black') +
+  # scale_fill_continuous(type = "viridis")
+  scale_fill_gradientn(colours = col.dem)
+```
+
+<br>
+
+## Catchment Area
+
+The above DEM is ["hydrologically corrected"](https://owrc.github.io/interpolants/interpolation/overland.html#Hydrological_%E2%80%9Ccorrection%E2%80%9D) meaning that the DEM is further processed in a manor that ensures downslope flowpaths remain continuous from peaks to lakes. From the hydrologically correct (HC) DEM, drainage area to any point can be calculated:
+
+```{r raster.casc, echo=FALSE, message=FALSE, warning=FALSE}
+casc.df <- as.data.frame(stars::read_stars("raster/owrc20-50-noGreatLake-HC-observations-trim-FINAL-cascade_count_100_gdTEGWFM18.bil"), xy=TRUE) %>%
+  na.omit() %>%
+  rename(contributing.area = 'owrc20.50.noGreatLake.HC.observations.trim.FINAL.cascade_count_100_gdTEGWFM18.bil') %>%
+  mutate(contributing.area = case_when(contributing.area>100000 ~ 100000, contributing.area<10 ~ 10, .default = contributing.area)) %>%
+  mutate(contributing.area = contributing.area*50*50/1000000) # convert to km2 (note original values came from 50m grid)
+
+p.casc <- ggplot(TEGWFM18.bnd %>% st_transform(crs = 26917)) +
+  theme_void() +
+  geom_raster(data=casc.df %>% na.omit(), 
+              aes(x = x, y = y, fill = log10(contributing.area))) +
+  geom_sf(fill=NA, linewidth=1, color='black') +
+  # scale_fill_continuous(type = "viridis")
+  scale_fill_gradientn(colours = c('black','white'))
+
+# https://wilkelab.org/cowplot/articles/plot_grid.html
+title <- ggdraw() +
+  draw_label(
+    "Catchment Areas (km²)",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+plot_row <- plot_grid(p.casc +
+                      theme(legend.position = 'bottom') +
+                      geom_rect(aes(xmin=585000, xmax=605000, ymin=4835000, ymax=4855000), 
+                                color="red",fill=NA, linewidth=1), 
+          p.casc + theme(legend.position = 'none') + coord_sf(xlim=c(585000,605000), ylim=c(4835000,4855000)), 
+          align = "H", ncol=2)
+plot_grid(title, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .8))
+```
+
+As can be seen in the above plots, the HC DEM reveals the local stream network. The advantage here recharge tends to increase downslope where water tables remain low, and this map can be used as a proxy to positions relative to the stream network.
+
+
+## Coordinates
+
+Lastly, both the Easting and Northing coordinates were used as explanatory variables as this well force the regression to locally correlated.
+
+
+
+# New (Regressed) Recharge
+
+```{r recharge.regr, echo=FALSE, message=FALSE, warning=FALSE}
+regr.df <- as.data.frame(stars::read_stars("raster/TEGWFM18_regressed_recharge.bil"), xy=TRUE) %>%
+  na.omit() %>%
+  rename(rch = 'TEGWFM18_regressed_recharge.bil') %>%
+  mutate(rch = case_when(rch<0 ~ 0, .default = rch))
+
+
+p.regr <- ggplot(YT3.bnd %>% st_transform(crs = 26917)) +
+  theme_void() +
+  theme(legend.title = element_blank()) +
+  geom_sf(fill=alpha('grey95',.5)) +
+  geom_raster(data=regr.df %>% dplyr::filter(rch<500), aes(x = x, y = y, fill = rch)) +
+  geom_sf(fill=NA, color='black', linewidth=1) +
+  labs(x=NULL,y=NULL) + #,title="TRCA Expanded Groundwater Flow Model, 2018 (TEGWFM18)", subtitle ="Annual Average Groundwater Recharge (mm/yr)") +
+  scale_fill_gradientn(colours=c("#f0f9e8","#7bccc4","#43a2ca","#0868ac")) 
+
+# https://wilkelab.org/cowplot/articles/plot_grid.html
+title <- ggdraw() +
+  draw_label(
+    "Recharge Extrapolation through Regression (2023)",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+subtitle <- ggdraw() +
+  draw_label(
+    "Annual Average Groundwater Recharge (mm/yr)",
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+plot_row <- plot_grid(p.regr +
+                      theme(legend.position = 'none') + 
+                      geom_rect(aes(xmin=585000, xmax=605000, ymin=4835000, ymax=4855000), 
+                                color="red",fill=NA, linewidth=1), 
+          p.regr + coord_sf(xlim=c(585000,605000), ylim=c(4835000,4855000)), 
+          align = "H", ncol=2)
+plot_grid(title, subtitle, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .01, .8))
+```
+
+
+## Validation
+
+The resulting recharge shown above shows improved granularity from the first approach. Comparing with the YT3 recharge differences can be large, but overall there is a -5.2 mm average difference between the recharge layers (less than 1\% for annual precipitation):
+
+```{r rechrage.compare, echo=FALSE, message=FALSE, warning=FALSE}
+msk.df <- as.data.frame(stars::read_stars("raster/TRCA-mask.bil"), xy=TRUE) %>% na.omit() %>%
+  rename(msk = 'TRCA.mask.bil')
+
+rechrge.merge.df <- merge(msk.df,merge(regr.df,yt3rch.df, by=c("x","y")), by=c("x","y")) %>% 
+  filter(rch>0, msk==1) %>% mutate(diff=rch-mm.per.year) 
+
+rechrge.merge.df %>% ggplot() +
+  theme_bw() +
+  geom_histogram(aes(diff)) + 
+  geom_vline(xintercept = mean(rechrge.merge.df$diff)) +
+  annotate("text", x = 30, y = 55000, label = paste0("mean: ",round(mean(rechrge.merge.df$diff),1), " mm/yr"), hjust = 0) +
+  labs(x='difference (mm/yr)', y='count', title='Difference between YT3 and regressed recharge') +
+  xlim(c(-500,500))
+```
+
+### Groundwater model performance
+
+```{r model.compare, echo=FALSE, message=FALSE, warning=FALSE}
+df.gw <- read.csv('calc/TEGWFM18_regressed_vs_YT3_hds.csv') %>% mutate(diff=h_y-h_x, lay=factor(as.integer(lay)))
+
+# df.gw %>% ggplot() + geom_density(aes(diff,fill=lay), alpha=.1)
+
+p0 <- df.gw %>% ggplot() + 
+  theme_bw() +
+  theme(aspect.ratio=1) +
+  geom_histogram(aes(diff)) + 
+  geom_vline(xintercept = mean(df.gw$diff)) +
+  xlim(c(-15,15)) +
+  annotate("text", x = 2, y = 600000, label = paste0("mean: ",round(mean(df.gw$diff),1), " m"), hjust = 0) +
+  labs(x="difference (m)",y='count',title="Residual of potentials", subtitle="regressed recharge less YT3 (m)")
+
+# df.gw %>% sample_frac(.1) %>% ggplot() +
+#   theme_bw() +
+#   theme(legend.position = 'none') +
+#   geom_point(aes(h_x,h_y,color=factor(lay)), alpha=.01, pch='.') +
+#   geom_abline(slope = 1, intercept = 0, linetype='dashed') +
+#   geom_abline(slope = 1, intercept = 10, linetype='dashed') +
+#   geom_abline(slope = 1, intercept = -10, linetype='dashed') +
+#   labs(x="YT3",y="YT3 with 2023 regressed recharge", title="Comparison of potentials/heads (masl)", subtitle="regressed recharge vs. YT3") +
+#   coord_fixed()
+
+
+# Extracting R-squared parameter from summary 
+ml = lm(h_y~h_x, data = df.gw) 
+r2 = summary(ml)$r.squared
+
+p1 <- df.gw %>% ggplot(aes(x=h_x, y=h_y)) + #, color=factor(lay))) +
+  theme_bw() +
+  theme(aspect.ratio=1) +
+  theme(legend.position = 'none') +
+  geom_scattermore(color='#4080c0', alpha=.01) +
+  annotate("text", x = 100, y = 400, label = paste0("n = ",nrow(df.gw),", R²: ",round(r2,2)), hjust = 0) +
+  geom_abline(slope = 1, intercept = 0, linetype='dashed') +
+  geom_abline(slope = 1, intercept = 10, linetype='dashed') +
+  geom_abline(slope = 1, intercept = -10, linetype='dashed') +
+  labs(x="YT3",y="YT3 with 2023 regressed recharge", title="Comparison of potentials/heads", subtitle="regressed recharge vs. YT3 (masl)") +
+  coord_fixed()
+
+grid.arrange(p1, p0, ncol=2)
+```
+
+
+## SGRA
+
+SGRAs created from the above recharge shows.........
+
+```{r sgra.regr, echo=FALSE, message=FALSE, warning=FALSE}
+sgra.regr.df <- as.data.frame(stars::read_stars("raster/TEGWFM18_regressed_recharge_sgra.bil"), xy=TRUE) %>%
+  na.omit() %>%
+  rename(sgra = 'TEGWFM18_regressed_recharge_sgra.bil')
+
+p.sgra.regr <- ggplot(YT3.bnd %>% st_transform(crs = 26917)) +
+  theme_void() +
+  theme(legend.position = 'none') +
+  geom_sf(fill=alpha('grey95',.5)) +
+  geom_raster(data=sgra.regr.df, aes(x = x, y = y, fill = sgra)) +
+  geom_sf(fill=NA, color='black', linewidth=1) +
+  labs(x=NULL,y=NULL) +
+  scale_fill_gradientn(colours=c("white","#0868ac")) 
+
+# https://wilkelab.org/cowplot/articles/plot_grid.html
+title <- ggdraw() +
+  draw_label(
+    "TRCA Expanded Groundwater Flow Model, 2023 regressed recharge",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+subtitle <- ggdraw() +
+  draw_label(
+    "Significant Groundwater Recharge Areas (blue)",
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)
+  )
+plot_row <- plot_grid(p.sgra.regr +
+                      geom_rect(aes(xmin=585000, xmax=605000, ymin=4835000, ymax=4855000), 
+                                color="red",fill=NA, linewidth=1), 
+          p.sgra.regr + coord_sf(xlim=c(585000,605000), ylim=c(4835000,4855000)), 
+          align = "H", ncol=2)
+plot_grid(title, subtitle, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .01, .8))
+```
+
+<br>
+
+# Conclusion
+
+blah
