@@ -26,7 +26,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-The latest official regional recharge estimation was the so-called York Tier-3 model [YT3 (2013)](https://www.ctcswp.ca/app/uploads/2017/05/RPT_201311_Earthfx_York_Tier3WBLocAreaRiskAssFNL.pdf). Part of the delivered model package was the long-term average recharge (mm/yr) which was applied (as model input) to the steady-state groundwater flow model used for source water protection planning.
+The latest official regional recharge estimation was the so-called York Tier-3 model [YT3 (2013)](https://www.ctcswp.ca/app/uploads/2017/05/RPT_201311_Earthfx_York_Tier3WBLocAreaRiskAssFNL.pdf). Part of the delivered model package was the long-term average recharge (mm/yr) which was applied (as model input) to the steady-state groundwater flow model and used for source water protection planning.
 
 Unfortunately, the YT3 model boundaries did not include the TRCA jurisdiction in its entirety.
 
@@ -73,13 +73,15 @@ A decision was made in 2018 to expanded the York Tier-3 model to:
 
 1. extend the eastern model boundary beyond the Carruther's Creek watershed boundary for its watershed plan
 1. expand westward to include Mimico and Etobicoke creeks (later used for their watershed plans)
-1. ensure that the "expanded" model boundary allows for cross-watershed boundary flux
+1. ensure that the "expanded" model boundary allows for some accounting of cross-watershed boundary flows
 
-> The expanded version can to be known as the *TRCA Expanded Groundwater Flow Model*-2018 (TEGWFM18)
+> The expanded version is known as the *TRCA Expanded Groundwater Flow Model*-2018 (TEGWFM18)
+
+
 
 ## York Tier-3 (YT3)
 
-In order to complete groundwater modelling portion of a watershed plan, an estimation of groundwater recharge is needed. Simulated groundwater recharge delivered with the YT3 model was constrained to the YT3 model boundary. Notice below how the modelled recharge does not extend to the expanded boundary:
+In order to complete groundwater modelling portion of a watershed plan, an estimation of groundwater recharge is needed. Simulated groundwater recharge delivered with the YT3 model was constrained to the YT3 model boundary. Notice below how the YT3 modelled recharge does not extend to the expanded boundary:
 
 
 ```{r recharge.YT3, echo=FALSE, message=FALSE, warning=FALSE}
@@ -163,7 +165,7 @@ plot_grid(title, plot_row, align = "H", ncol=1, rel_heights = c(0.1, 1))
 
 The source of the surficial geology data is: *Ontario Geological Survey 2010. Surficial geology of southern Ontario; Ontario Geological Survey, Miscellaneous Release— Data 128 – Revised.*
 
-The OGS vector file was converted to raster using [QGIS](https://docs.qgis.org/3.28/en/docs/user_manual/processing_algs/gdal/vectorconversion.html#rasterize-vector-to-raster) targeting the **PERMEABILI** attribute (OGS, 2010) categorized into 8 values:
+The OGS vector file was converted to raster using [QGIS](https://docs.qgis.org/3.28/en/docs/user_manual/processing_algs/gdal/vectorconversion.html#rasterize-vector-to-raster) targeting the **PERMEABILI** attribute (OGS, 2010) categorized into 7 values:
 
 
 ```{r raster.ogs, echo=FALSE, message=FALSE, warning=FALSE}
@@ -240,14 +242,14 @@ plot_grid(title, subtitle, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .
 ```
 
 
-Notice in the blown-up section to the right of the above figure, the recharge exhibits greater granularity to the right of the YT3 model boundary (black line) compared to the expanded region (left); this is expected due to the averaging methodology being applied.
+Notice in the blown-up section to the right of the above figure, the recharge exhibits greater granularity to the right of the YT3 model boundary (red dashed line) compared to the expanded region (left side); this is expected with the averaging methodology being applied.
 
-Overall, this procedure will simply provide an averaged recharge field, and should not have a large effect on the modelled groundwater flow system. As such, they are sufficient for watershed planning (e.g., groundwater discharge to streams).
+Overall, this procedure will simply provide an averaged recharge field, and should not have a large effect on the modelled groundwater flow system. As such, they are sufficient for watershed planning (e.g., groundwater discharge to streams is a regional groundwater process).
 
 
-### SGRA
+### SGRAs
 
-Enter Significant Groundwater Recharge Areas (SGRAs): This is a source water protection map that is very much affected by granularity in that the greater the granularity, the smaller and numerous the SGRA. With known recharge $g$, SGRAs are defined as:
+Enter Significant Groundwater Recharge Areas (SGRAs): This is a source water protection map that is very much affected by granularity: the greater the granularity, the smaller and isolated the SGRAs become, in general. With known recharge $g$, SGRAs are defined as:
 
 $$
   \text{SGRA} = 
@@ -307,12 +309,12 @@ plot_row <- plot_grid(p.sgra.TEGWFM18 +
 plot_grid(title, subtitle, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .01, .8))
 ```
 
-> An obvious edge-matching issue
+> An obvious edge-matching issue can be seen above
 
 
 # Proposed Solution
 
-A more-detailed raster extrapolation scheme know as [**"raster regression analysis"**](https://desktop.arcgis.com/en/arcmap/latest/tools/spatial-statistics-toolbox/exploratory-regression.htm). Here, instead of grouping and averaging recharge into Land Use/Surficial Geology bins, land use and surficial geology are used as explanatory variables used to determine a (regression) model fit to the data. In addition to land use and surficial geology, elevations, catchment areas and coordinates are included in the regression analysis.
+An alternative raster extrapolation scheme known as [**"raster regression analysis"**](https://desktop.arcgis.com/en/arcmap/latest/tools/spatial-statistics-toolbox/exploratory-regression.htm) is explored. Here, instead of grouping and averaging recharge into Land Use/Surficial Geology bins, land use and surficial geology are used as explanatory variables used to fit a regression model to the simulated (YT3) recharge. In addition to land use and surficial geology, elevations, catchment areas and coordinates are included in the regression analysis.
 
 
 ## Elevation
@@ -378,13 +380,17 @@ plot_row <- plot_grid(p.casc +
 plot_grid(title, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .8))
 ```
 
-As can be seen in the above plots, the HC DEM reveals the local stream network. The advantage here recharge tends to increase downslope where water tables remain low, and this map can be used as a proxy to positions relative to the stream network.
+As can be seen in the above plots, the HC DEM reveals the stream network. The advantage here is that recharge tends to increase downslope in areas where water tables remain low, and this map can be used as a proxy to positions relative to the stream network.
 
 
 ## Coordinates
 
-Lastly, both the Easting and Northing coordinates were used as explanatory variables as this well force the regression to locally correlated.
+Lastly, both the Easting and Northing coordinates were used as explanatory variables as this well force the regression to retain some local correlation.
 
+
+## Mask
+
+One last point is that the regression model is fit only to recharge simulated within the TRCA boundary.
 
 
 # New (Regressed) Recharge
@@ -439,9 +445,12 @@ plot_grid(title, subtitle, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .
 ```
 
 
+The resulting recharge is somewhere in between the old methodology and the recharge delivered with YT3 (2013). However, seeing the granularity is promising for SGRA consistency. 
+
+
 ## Validation
 
-The resulting recharge shown above shows improved granularity from the first approach. Comparing with the YT3 recharge differences can be large, but overall there is a -5.2 mm average difference between the recharge layers (less than 1\% for annual precipitation):
+The resulting recharge shown above shows improved granularity from the first approach. Comparing with the YT3 recharge differences can be large, but overall there is a 0.8 mm/yr overall difference between the recharge layers (less than 1\% for annual precipitation):
 
 ```{r rechrage.compare, echo=FALSE, message=FALSE, warning=FALSE}
 msk.df <- as.data.frame(stars::read_stars("raster/TRCA-mask.bil"), xy=TRUE) %>% na.omit() %>%
@@ -454,12 +463,15 @@ rechrge.merge.df %>% ggplot() +
   theme_bw() +
   geom_histogram(aes(diff)) + 
   geom_vline(xintercept = mean(rechrge.merge.df$diff)) +
-  annotate("text", x = 30, y = 55000, label = paste0("mean: ",round(mean(rechrge.merge.df$diff),1), " mm/yr"), hjust = 0) +
+  annotate("text", x = 30, y = 55000, label = paste0("median: ",round(median(rechrge.merge.df$diff),1), " mm/yr"), hjust = 0) +
   labs(x='difference (mm/yr)', y='count', title='Difference between YT3 and regressed recharge') +
   xlim(c(-500,500))
 ```
 
 ### Groundwater model performance
+
+The new recharge was applied to the YT3 model and heads at close to 3M locations were compared to see how the regressed recharge affected the model.  Again, differences can be large, but over all the bulk of the difference is <1m for a model that's close to 500m is elevation.
+
 
 ```{r model.compare, echo=FALSE, message=FALSE, warning=FALSE}
 df.gw <- read.csv('calc/TEGWFM18_regressed_vs_YT3_hds.csv') %>% mutate(diff=h_y-h_x, lay=factor(as.integer(lay)))
@@ -472,7 +484,7 @@ p0 <- df.gw %>% ggplot() +
   geom_histogram(aes(diff)) + 
   geom_vline(xintercept = mean(df.gw$diff)) +
   xlim(c(-15,15)) +
-  annotate("text", x = 2, y = 600000, label = paste0("mean: ",round(mean(df.gw$diff),1), " m"), hjust = 0) +
+  annotate("text", x = 2, y = 600000, label = paste0("median: ",round(median(df.gw$diff),1), " m"), hjust = 0) +
   labs(x="difference (m)",y='count',title="Residual of potentials", subtitle="regressed recharge less YT3 (m)")
 
 # df.gw %>% sample_frac(.1) %>% ggplot() +
@@ -505,10 +517,26 @@ p1 <- df.gw %>% ggplot(aes(x=h_x, y=h_y)) + #, color=factor(lay))) +
 grid.arrange(p1, p0, ncol=2)
 ```
 
+<br>
 
-## SGRA
+With regard to groundwater-surface water interactions, the 2023 regressed recharge had minor effects. The model's global waterbudget (10³ m³/d):
 
-SGRAs created from the above recharge shows.........
+
+|  | 2013 | 2023 | \%-change |
+| :--- | ---: | ---: | ---: |
+| Discharge to streams | 69.8 | 71.3 | 2% |
+| Discharge to surface | 1,628.0 | 1,570.7 | -4% |
+| Groundwater recharge | 1,866.0 | 1,810.8 | -3% |
+
+
+
+<br>
+
+## SGRAs
+
+SGRAs created from the above recharge shows no sign of an edge matching issue. SGRAs in the extended region is indistinguishable from the YT3 area.
+
+
 
 ```{r sgra.regr, echo=FALSE, message=FALSE, warning=FALSE}
 sgra.regr.df <- as.data.frame(stars::read_stars("raster/TEGWFM18_regressed_recharge_sgra.bil"), xy=TRUE) %>%
@@ -558,6 +586,26 @@ plot_grid(title, subtitle, plot_row, align = "H", ncol=1, rel_heights = c(0.1, .
 
 <br>
 
-# Conclusion
 
-blah
+
+# Summary
+
+Currently the TRCA is using 2 recharge maps for their planning services:
+
+1. The YT3 recharge as made available on the [TRSPA Water Balance Tool](https://trca.ca/conservation/drinking-water-source-protection/trspa-water-balance-tool/), and
+1. The expanded recharge used for the TRCA Expanded Groundwater Flow Model (TEGWFM18).
+
+The YT3 is the latest estimate of groundwater recharge, from which all other recharge estimates are extrapolated.  The YT3 model is the official model used for Source water Protection (SWP), only it does not cover the TRCA in its entirety.
+
+The TEGWFM18 was developed for watershed planning in the Carruthers and Etobicoke. It involved some crude (yet justified) steps to obtain waterbudget estimates for all of the TRCA. The method for estimating recharge, however, is not suitable for ongoing SWP work that seeks to include the Etobicoke watershed.
+
+
+<br>
+
+I propose moving forward with a "2023" update of the recharge model that:
+
+1. can continue be applied for watershed planning, and
+1. remain applicable to exercises demanded by source water protection.
+
+The advantage is that the TRCA will maintain a singular recharge model moving forward (except for the TRSPA Water Balance Tool). The method remains crude, but meets the requirement set above. Ideally, the TRCA (and/or the City of Toronto) should invest in an hydrologic model to provide updated long-term (and projected future) average annual recharge.
+

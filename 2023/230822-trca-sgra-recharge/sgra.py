@@ -26,7 +26,7 @@ def readasc(fp):
 rch = readasc("O:/internal/TRCA/TEGWFM18/input_MFNWT/TRCA_expansion_RCH.asc")
 # rch *= 365.25*1000.
 
-msk = np.fromfile("raster/TRCA_expansion-mask.bil",dtype=np.int32).reshape(rch.shape)
+msk = np.fromfile("raster/TRCA-mask.bil",dtype=np.int32).reshape(rch.shape)
 
 
 meanrch = np.mean(rch[np.logical_and(rch>0, msk>0)])
