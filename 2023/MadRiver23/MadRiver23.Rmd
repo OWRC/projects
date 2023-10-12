@@ -225,40 +225,19 @@ For model calibration, efforts were made to isolate events that are not caused b
 
 <br>
 
-```{r evnt.scatter, echo=FALSE, message=FALSE, warning=FALSE}
-# read.csv("E:/Sync/@dev/go/src/ORMGP Modelling/HEC-HMS/event-summary-MadRiver23.csv") %>%
-#   # filter(year!=2013) %>%
-#   ggplot(aes(x=ptot,y=qtot)) +
-#     theme_bw() +  theme(legend.position = c(.1,.9), legend.justification = c(0,1)) +
-#     geom_point(aes(size=qmax,color=qmax)) +
-#     geom_text_repel(aes(label=year)) +
-#     scale_color_continuous(limits=c(0, 100), breaks=seq(0, 100, by=20), name="Peak discharge (m³/s)") +
-#     scale_size_continuous(limits=c(0, 100), breaks=seq(0, 100, by=20), name="Peak discharge (m³/s)") +
-#     guides(color=guide_legend(), size=guide_legend()) +
-#     labs(x='Total rainfall (mm)', y="Runoff volume (mm)")
-
-read.csv("E:/Sync/@dev/go/src/ORMGP Modelling/HEC-HMS/event-summary-MadRiver23.csv") %>%
-  # filter(year!=2013) %>%
-  ggplot(aes(x=ptot,y=qmax)) +
-  theme_bw() +  theme(legend.position = c(.1,.9), legend.justification = c(0,1)) +
-  geom_point(aes(size=qtot,color=qtot)) +
-  geom_text_repel(aes(label=year)) +
-  scale_color_continuous(limits=c(0, 20), breaks=seq(0, 20, by=5), name="Runoff volume (mm)") +
-  scale_size_continuous(limits=c(0, 20), breaks=seq(0, 20, by=5), name="Runoff volume (mm)") +
-  guides(color=guide_legend(), size=guide_legend()) +
-  labs(x='Total rainfall (mm)', y="Peak discharge (m³/s)", title="Rainfall-runnoff event summary",subtitle="02ED015: Mad River below Avening")
-```
-
-<br>
-
 ```{r evnt.table, echo=FALSE, message=FALSE, warning=FALSE}
 read.csv("E:/Sync/@dev/go/src/ORMGP Modelling/HEC-HMS/event-summary-MadRiver23.csv") %>%
+  filter(year!=2013) %>%
   subset(select=-c(dtb,dte)) %>%
-  rename('Rainfall (mm)'='ptot', "Runoff (mm)"='qtot', "Peak Discharge (m³/s)"='qmax', "Initial Discharge (m³/s)"='q0') %>%
-  arrange(year) %>%
-  kable(caption = 'Extreme event summary', digits=1, format = "html", table.attr = "style='width:80%;'") %>%
+  rename('Year'='year', 'Rainfall (mm)'='ptot', "Runoff (mm)"='qtot', "Peak Discharge (m³/s)"='qmax', "Initial Discharge (m³/s)"='q0') %>%
+  arrange(Year) %>%
+  mutate(`Use*`=c('valid.','valid.','valid.','calibr.','calibr.','valid.','calibr.','calibr.','valid.','calibr.','calibr.')) %>%
+  relocate(`Use*`, .after = Year) %>%
+  kable(caption = 'Selected extreme flow events for modelling to 02ED015.', digits=1, format = "html", table.attr = "style='width:80%;'") %>%
   kable_styling(position = "left")
 ```
+
+_* calibr.=calibration; valid.=validation_
 
 <br>
 
@@ -345,19 +324,23 @@ SOLRIS v3.0 (OMNR, 2019a) provides as a set of land use identifiers. From these,
 
 *Percent imperviousness based on SOLRIS mapping.*
 
+<a name="lusg.ia"></a>
 #### Initial Abstraction
 
-SOLRIS land use mapping is also used to distribute vegetation canopy cover that provides first estimates of initial abstraction capacities:
+With SOLRIS land use mapping, canopy cover density is distributes to provides first estimates of initial abstraction capacities:
 
 ![](img/basin-cov.png){width=85%}
 
 *Relative vegetation cover based on SOLRIS mapping.*
 
-
+<br>
 
 #### Soil Characteristics
 
-Surficial Geology (OGS, 2010) defines soil characteristics. The OGS layers are attributed with a set of "relative permeabilities" needed to define ["Hydrologic Soil Groups"](https://directives.sc.egov.usda.gov/OpenNonWebContent.aspx?content=17757.wba). Based on the *"PERMEABILI"* attribute of the OGS (2010) layer, soil characteristics needed to estimate infiltration loss parameters for the Upper Mad River Watershed are determined:
+Surficial Geology (OGS, 2010) defines soil characteristics. The OGS layers are attributed with a set of relative permeabilities used to map ["Hydrologic Soil Groups"](https://directives.sc.egov.usda.gov/OpenNonWebContent.aspx?content=17757.wba). For the *"PERMEABILI"* attribute of the OGS (2010) layer, soil groups (A, B, C, D) are mapped to (High, Medium, Low-medium, Low) permeabilities. 
+
+
+needed to estimate infiltration loss parameters for the Upper Mad River Watershed are determined:
 
 ![](img/basin-k.png){width=85%}
 
@@ -376,7 +359,7 @@ SOLRIS land use (OMNR, 2019a) and OGS (2010) surficial geology are combined to d
 
 ![](img/basin-cn.png){width=85%}
 
-*SCS Curve Numbers based on a geospatial overlay of SOLRIS and OGS surficial geology.*
+*SCS Curve Numbers based on a geospatial overlay of SOLRIS and OGS surficial geology. Darker blue: higher CN.*
 
 
 <br>
@@ -427,7 +410,7 @@ Some "free" parameters are applied uniformly (i.e., globally) across the model. 
  - channel length; and 
  - channel slope.
 
-[Subbasin parameters can be inspected above.](#sws.leaflet)
+[*Subbasin parameter assignment can be inspected above.*](#sws.leaflet)
 
 Calibration parameters include:
 
@@ -762,14 +745,63 @@ df.results.CC %>%
 
 ## Discussion
 
-> Place-holder
 
-- 2013 storm issues
-- flashy system
-  - <15min resolution rocemmended
-  - had to eliminate reach lag to match rising limbs
-- $\text{LAI}=5$
-- baseflow dependence: retention times seem differ by month
+### Omission of the 2013 storm
+
+The July 8, 2013 storm was a notable event, causing mass power outages and leaving stranded cars and even trains. It was also a particularly distinct event observed at the 02ED015 stream flow gauge that would be an obvious target for modelling extreme events. For reasons best described by plot below, there was a mismatch in data availability preventing model calibration to this event.
+
+```{r evnt.scatter, echo=FALSE, message=FALSE, warning=FALSE}
+# read.csv("E:/Sync/@dev/go/src/ORMGP Modelling/HEC-HMS/event-summary-MadRiver23.csv") %>%
+#   # filter(year!=2013) %>%
+#   ggplot(aes(x=ptot,y=qtot)) +
+#     theme_bw() +  theme(legend.position = c(.1,.9), legend.justification = c(0,1)) +
+#     geom_point(aes(size=qmax,color=qmax)) +
+#     geom_text_repel(aes(label=year)) +
+#     scale_color_continuous(limits=c(0, 100), breaks=seq(0, 100, by=20), name="Peak discharge (m³/s)") +
+#     scale_size_continuous(limits=c(0, 100), breaks=seq(0, 100, by=20), name="Peak discharge (m³/s)") +
+#     guides(color=guide_legend(), size=guide_legend()) +
+#     labs(x='Total rainfall (mm)', y="Runoff volume (mm)")
+
+read.csv("E:/Sync/@dev/go/src/ORMGP Modelling/HEC-HMS/event-summary-MadRiver23.csv") %>%
+  # filter(year!=2013) %>%
+  ggplot(aes(x=ptot,y=qmax)) +
+  theme_bw() +  theme(legend.position = c(.1,.9), legend.justification = c(0,1)) +
+  geom_point(aes(size=qtot,color=qtot)) +
+  geom_text_repel(aes(label=year)) +
+  scale_color_continuous(limits=c(0, 20), breaks=seq(0, 20, by=5), name="Runoff volume (mm)") +
+  scale_size_continuous(limits=c(0, 20), breaks=seq(0, 20, by=5), name="Runoff volume (mm)") +
+  guides(color=guide_legend(), size=guide_legend()) +
+  labs(x='Total rainfall (mm)', y="Peak discharge (m³/s)", title="Rainfall-runnoff event summary",subtitle="02ED015: Mad River below Avening")
+```
+
+*Rainfall-runoff magnitudes of 12 available flood events*
+
+<br>
+
+There is a clear discrepancy between the accumulative rainfall observed and both the peak and cumulative discharge measured at the Mad River gauge. The 2013 storm appears to be highly localized that failed to be registered by either the CaPA-RDPA system or the Environment Canada meteorological station network. Including the storm into the calibration required sacrifice that was too costly to the global calibration; thus the 2013 storm was omitted.
+
+Before doing so, an hourly hyetograph obtained from [Mount Forest (AUT)---6145504](https://climate.weather.gc.ca/climate_data/hourly_data_e.html?StationID=7844&txtStationName=mount+forest) was substitute for the 6-hourly to check whether rainfall intensity factored in the calibration mismatch. This was *not* the case. *NOTE: The Mount Forest (AUT) dataset is included with the model file delivery.*
+
+
+### Flashy system
+
+As evidenced by the tendency for model (calibration) performance to increase with decreased lag times, the modelling exercise suggests that the upper Mad River is a flashy system. Lag times had to be reduced to match the speed of rising limbs.
+
+It is recommended that future modelling of extreme events be performed with monitoring data at or below a 15 minute temporal resolution.
+
+
+### Initial abstractions
+
+Along with lag times, sensitivity analysis showed that model calibration could be accomplished quite well while assuming initial abstractions can be neglected $(f_{ia}\rightarrow 0)$; a consequence of calibrating to flashy systems. The intent here is to produce a model with continuous modelling applicability; neglecting $i_a$ is untenable.
+
+Therefore, [cover density](#lusg.ia) was multiplied by a summertime standard leaf-area index $\text{LAI}=5$ to determine $i_a$ for each subbasin. Initial abstraction $(i_a)$ was kept constant and calibration proceeded by adjusting the remaining parameters.
+
+
+### Baseflow dependence
+
+There is some indication that the summer hydrograph form is affected by the state in groundwater levels. The Flashiest of storms tended to occur near the end of the summer season and when initial discharge $(Q_0)$ was relatively low. It appears that the groundwater and hydrological systems should *not* be de-coupled.
+
+
 
 
 
@@ -779,7 +811,7 @@ df.results.CC %>%
 
 Duan, Q.Y., V.K. Gupta, and S. Sorooshian, 1993. Shuffled Complex Evolution Approach for Effective and Efficient Global Minimization. Journal of Optimization Theory and Applications 76(3) pp.501-521.
 
-Environmental Water Resoureces Group, 2017. Technical Guidelines for Flood Hazard Mapping (March, 2017). 137pp.
+Environmental Water Resources Group, 2017. Technical Guidelines for Flood Hazard Mapping (March, 2017). 137pp.
 
 Klaassen, J., 2014. Ontario Rainfall Climatology. Internal Environment Canada (Meteorological Service of Canada) publication. Prepared in support of the Toronto 2015 Pan Am and Parapan Am Games. Toronto, Ontario.
 
