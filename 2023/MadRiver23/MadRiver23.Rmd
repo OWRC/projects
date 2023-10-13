@@ -3,14 +3,18 @@ title: "Rainfall-Runoff Modelling of the Mad River"
 author: "Oak Ridges Moraine Groundwater Program"
 date: "`r gsub(' 0', ' ', format(Sys.time(), '%d %B, %Y'))`"
 output:
-  html_document:
+  bookdown::html_document2:
     toc: yes
     toc_float: yes
     toc_depth: 4
+  pdf_document:
+    toc: yes
+    toc_depth: '4'
   word_document:
     toc: yes
-subtitle: "An event-based HEC-HMS model of the Upper Mad River watershed. Prepaired
+subtitle: "An event-based HEC-HMS model of the Upper Mad River watershed. Prepared
   for the NVCA"
+always_allow_html: true
 ---
 
 <style type="text/css">
@@ -45,53 +49,53 @@ df <- read.csv("O:/MadRiver23/02-goHECHMS/HEC-HMS_subbasins.csv")
 
 ## Upper Mad River
 
-The Nottawasaga Valley Conservation Authority (NVCA) and The Oak Ridges Moraine Groundwater Program (ORMGP) have partnered to explore the applicability of the [__ORMGP's historical climate data service__](/interpolants/modelling/waterbudget/data.html) in supporting event-based HEC-HMS models built in Southern Ontario to investigate the rainfall-runoff response to extreme summer rainfall events. As a proof of concept, the ~246km² Upper Mad River watershed was identified as a good first candidate.
+The Nottawasaga Valley Conservation Authority (NVCA) and The Oak Ridges Moraine Groundwater Program (ORMGP) have partnered to explore the applicability of the [__ORMGP's historical climate data service__](https://owrc.github.io/interpolants/modelling/waterbudget/data.html) in supporting event-based HEC-HMS models built in Southern Ontario to investigate the rainfall-runoff response to extreme summer rainfall events. As a proof of concept, the ~246km² Upper Mad River watershed was identified as a good first candidate.
 
-<!-- ![](img/basemap.png) -->
+<br>
 
-```{r basemap, echo=FALSE, message=FALSE, warning=FALSE}
+```{r basemap, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Upper Mad River watershed and the Water Survey of Canada (WSC) gauge targeted for HEC-HMS calibration"}
 source("basemap.R", local = TRUE)$value
 ```
-
-*Upper Mad River watershed and the Water Survey of Canada (WSC) gauge targeted for HEC-HMS calibration*
 
 <br>
 
 ## HEC-HMS
 
-The HEC-HMS model development proceeded in a manor to accommodate future long-term continuous simulations planed by the NVCA. As such, the NVCA requested a "Deficit and Constant" method suitable for long term continuous modelling be included with the delivered model. The HEC-HMS model code offered by the [US Army Corps of Engineers Hydrologic Engineering Center](https://www.hec.usace.army.mil/software/hec-hms/) includes such functionality as do many other model codes investigated (including [PRMS](https://www.usgs.gov/software/precipitation-runoff-modeling-system-prms), [Raven](http://raven.uwaterloo.ca/), [MikeSHE](https://www.mikepoweredbydhi.com/products/mike-she), [HydroGeoSphere](https://www.aquanty.com/hydrogeosphere), etc.), yet it was ultimately chosen due to the code:
+The HEC-HMS model development proceeded in a manner such that planned future long-term continuous simulations could be readily accommodated. As such, the NVCA requested a "Deficit and Constant" method suitable for long term continuous modelling be included with the delivered model. The HEC-HMS model code offered by the [US Army Corps of Engineers Hydrologic Engineering Center](https://www.hec.usace.army.mil/software/hec-hms/) includes such functionality. Many other model codes investigated for this study (including [PRMS](https://www.usgs.gov/software/precipitation-runoff-modeling-system-prms), [Raven](http://raven.uwaterloo.ca/), [MikeSHE](https://www.mikepoweredbydhi.com/products/mike-she), [HydroGeoSphere](https://www.aquanty.com/hydrogeosphere), etc.), also incorporate this functionality, yet HEC-HMS was ultimately chosen due to the code:
 
 1. being free of cost;
 1. having an integrated Graphical User Interface (GUI);
 1. having both event and continuous/deficit and constant modelling capabilities;
-1. including powerful capabilities such as the [2D shallow water flow module included in HEC-RAS](https://www.hec.usace.army.mil/confluence/rasdocs/r2dum/latest/introduction/hec-ras-2d-modeling-advantages-capabilities).
+1. has powerful capabilities such as the [2D shallow water flow module included in HEC-RAS](https://www.hec.usace.army.mil/confluence/rasdocs/r2dum/latest/introduction/hec-ras-2d-modeling-advantages-capabilities).
 1. being widely used both professionally and academically, thus making HEC-HMS the right application to be adopted institutionally due to its transferability.
-
-
-![](img/HEC-HMS_screenshot.png)
-
-*Snapshot of the Mad River HEC-HMS project*
 
 <br>
 
+```{r screenshot, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Snapshot of the Mad River HEC-HMS project."}
+  knitr::include_graphics('img/HEC-HMS_screenshot.png')
+```
+
+<br>
+
+
 ## Design Criteria
 
-The model construction phase proceeded with certain constraints such that the model can be readily simulate continuous processes. For instance, the model was built with:
+The model construction phase proceeded with certain constraints such that the model can readily simulate continuous processes. For instance, the model was built with:
 
-1. smaller (~10km²) subbasins commensurate with sub-watershed boundaries managed by the NVCA that also coincide with the ORMGP climate data service distribution. (In total there are 27 HEC-HMS Subbasins.)
-1. watershed built using HEC-HMS's "GIS" functionality based on a 10m DEM.
+1. smaller (~10km²) subbasins commensurate with sub-watershed boundaries managed by the NVCA that also coincide with the ORMGP climate data service distribution. In total there are 27 HEC-HMS subbasins (see Figure \@ref(fig:leaflet)).
+1. subbasins and reaches using HEC-HMS's "GIS" functionality based on a 10m DEM.
 1. applied map-based hydrologic processes (i.e., SCS curve method) that is best suited for simulating future land use change.
 
 
-It's important to note that in practice, models are developed to be either event-based (e.g., individual extreme rainfall events) vs. continuous (e.g., long-term/seasonal hydrology, climate change, etc.) but rarely both. The ORMGP maintains a near-real-time daily data set complete since 1901 built for long term continuous modelling needed for groundwater resource management. However, we also maintain a 6-hourly near-real-time climate data set since 2002. Both of these products are complete and are [spatially distributed to thousands of ~10km² sub-watersheds covering our jurisdiction](/interpolants/modelling/waterbudget/data.html).
+It's important to note that in practice, models are developed to be either event-based (e.g., individual extreme rainfall events) or continuous (e.g., long-term/seasonal hydrology, climate change, etc.) but rarely both. The ORMGP maintains a near-real-time daily data set complete since 1901, that was built to support long term continuous modelling needed for groundwater resource management. However, the ORMGP also maintains a 6-hour, near-real-time climate data set since 2002. Both of these products are complete and are [spatially distributed to thousands of ~10km² sub-watersheds covering the ORMGP jurisdiction](https://owrc.github.io/interpolants/modelling/waterbudget/data.html).
 
 
 
-The following snapshot has been prepared to assist the NVCA with preparation of HEC-HMS Technical Memo (Task 1.4) describing the methods used to compile necessary data (Task 1.1), build the model (Task 1.2), calibrate/verify the model and conduct a sensitivity analysis (Task 1.3).
+This has been prepared to satisfy the agreement between NVCA and ORMGP with respect to the Mad River Modelling study. Specifically, it satisfies Task 1.4 (assist the NVCA with preparation of HEC-HMS Technical Memo). To meet this task, this document includes the methods used to i) compile the necessary data (Task 1.1); ii) build the model (Task 1.2); and iii) calibrate/verify the model and conduct a sensitivity analysis (Task 1.3).
 
-<a name="sws.leaflet"></a><br>
+<br>
 
-```{r sws.leaflet, echo=FALSE, message=FALSE, warning=FALSE}
+```{r leaflet, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Mad River HEC-HMS subbasins (click on basins to see properties*)"}
 subbasins <- st_transform(st_read("O:/MadRiver23/HEC-HMS/MadRiver23/maps/HEC-HMS_subbasins.shp", quiet=TRUE), 4326)
 
 leaflet(subbasins) %>%
@@ -110,130 +114,151 @@ leaflet(subbasins) %>%
                               '<br>reach length: ', round(fplen.km,1), "km"
                               ),
               highlightOptions = highlightOptions(
-                opacity = 1, fillOpacity =1, weight = 5, sendToBack = FALSE
+                opacity = 1, fillOpacity =.65, weight = 5, sendToBack = FALSE
               )
   )
 ```
 
-*Mad River HEC-HMS subbasins (click on watershed for more details)*
+_* interactive maps are only when [viewed as a webpage](https://owrc.github.io/projects/2023/MadRiver23/)._
 
 <br>
 
 # Data Collection
 
-The target for the Data Collection (Task 1.1) piece was the for the implementation of the ORMGP climate data service. As each of the HEC-HMS subbasin mapped well to the ORMGP's sub-watershed delineation, rainfall data was nonetheless derived from the ~10km² [CaPA-RDPA](https://weather.gc.ca/grib/grib2_RDPA_ps10km_e.html) grid shown below.  Compared with meteorological stations, the CaPA-RDPA product offers a finer spatial distribution of precipitation amounts. Given that southern Ontario extreme summer events are typically of the convective type (Klaassen, 2014), many of these storms are themselves small in scale and are susceptible of being unobserved by southern Ontario's relatively coarse station network.
+The Data Collection piece (Task 1.1) relied upon the incorperation of the ORMGP climate data service. Each of the HEC-HMS subbasins mapped well to the ORMGP's sub-watershed delineation. Rainfall accumulations was nonetheless derived from the ~10km² [CaPA-RDPA](https://weather.gc.ca/grib/grib2_RDPA_ps10km_e.html) grid shown below.  Compared with meteorological stations, the CaPA-RDPA product offers a finer spatial distribution of precipitation amounts. Given that southern Ontario extreme summer events are typically of the convective type (Klaassen, 2014), many of these storms are small in scale and are susceptible of being unobserved by southern Ontario's relatively coarse meteorological station network.
 
+<br>
 
-![](img/capagrid.png)
-
-*HEC-HMS subbasins vs. CaPA-RDPA resolution vs Nearest Active hourly climate stations.*
+```{r capagrid, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="HEC-HMS subbasins vs. CaPA-RDPA resolution vs Nearest Active hourly climate stations."}
+  knitr::include_graphics('img/capagrid.png')
+```
 
 <br>
 
 ## Meteorological Data
 
 
-Meteorological data (i.e., precipitation, snow, temperature, radiation) are analysed. Locally, there exists 3 active meteorological stations having hourly precipitation data (click to view ORMGP's *"sHydrology"* data analysis suite):
+For the study, meteorological data (i.e., precipitation, snow, temperature, radiation) from three local active meteorological stations having hourly precipitation data (click on a station below to view ORMGP's *sHydrology* data analysis suite) are analyzed. Note that these stations only date back to approximately 2000, so longer term trends (greater than about 25 years) cannot be evaluated using these local stations. 
 
 1. [**6111792: COLLINGWOOD**](https://owrc.shinyapps.io/sHyMet/?sID=148613)
 1. [**6117700: BARRIE-ORO**](https://owrc.shinyapps.io/sHyMet/?sID=697655275)
 1. [**611E001: EGBERT CS**](https://owrc.shinyapps.io/sHyMet/?sID=360000028)
 
 
-Annual precipitation in the region have seen mixed trends as of late. For instance Collingwood shows a increasing trend of annual precipitation volumes over the past 30 years, whereas a decreasing trend is found at Egbert CS and no trend is identified at Barrie-Oro. Trends are assessed both visually and objectively using the Mann-Kendall test for trend (p<0.05) using annual precipitation accumulations in years having complete data.
-
-![](img/6111792-annual-precip-trend.png)
-
-*Annual totals of precipitation. Red outlines signify years that do not pass the [WMO 3/5 rule](https://climate.weather.gc.ca/glossary_e.html#wmo_standards).*
+There is no general trend to annual precipitation in the region. For instance, Collingwood shows a increasing trend of annual precipitation volumes over the past 30 years (Figure \@ref(fig:6111792-annual-precip-trend)), whereas a decreasing trend is found at Egbert CS and no trend is identified at Barrie-Oro (graphs for Egbert and Barrie-Oro not shown here but are readily available by clicking on above links). Trends are assessed both visually and quantitatively using the Mann-Kendall test for trend (p<0.05) using annual precipitation accumulations in years that have complete data.
 
 <br>
 
-Mean annual snowpack depths appear to be on the decline as see at Egbert CS. (Note: Mann-Kendall test for trend was not applied as snowpacks do not persist year-round.)
-
-![](img/6111792-annual-snowpack-trend.png)
-
-*Mean annual snowpack depth (cm). (Snow depth is not monitored at Collingwood)*
+```{r 6111792-annual-precip-trend, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Annual precipitation. Red outlines signify years that do not pass the [WMO 3/5 rule](https://climate.weather.gc.ca/glossary_e.html#wmo_standards)."}
+  knitr::include_graphics('img/6111792-annual-precip-trend.png')
+```
 
 <br>
 
-Lastly, air temperatures at all location stations do not appear to show any trend:
+Mean annual snowpack depths, as shown at Egbert CS (Figure \@ref(fig:6111792-annual-snowpack-trend)), appear to be on the decline. (Note: Mann-Kendall test for trend was not applied as snowpacks do not persist year-round.)
 
-![](img/6111792-annual-meantemp-trend.png)
+<br>
 
-*Departure from mean daily temperature (8°C) at Collingwood*
+```{r 6111792-annual-snowpack-trend, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Mean annual snowpack depth (cm). (Snow depth is not monitored at Collingwood)."}
+  knitr::include_graphics('img/6111792-annual-snowpack-trend.png')
+```
+
+<br>
+
+Lastly, air temperatures over the past 25 years at all location stations do not appear to show any trend:
+
+<br>
+
+```{r 6111792-annual-meantemp-trend, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Departure from mean daily temperature (8°C) at Collingwood."}
+  knitr::include_graphics('img/6111792-annual-meantemp-trend.png')
+```
 
 <br>
 
 ### 24-hour Precipitation Returns
 
-Below shows the frequency analysis performed the 24-hour accumulations observed in Collingwood. From 22 years of data, the extrapolated 100-year 24-hour storm looks to be close to ~150 mm:
+Below shows the frequency analysis performed on the 24-hour accumulations observed at Collingwood (also available form the links above). From 22 years of data, the extrapolated 100-year 24-hour storm looks to be close to ~150 mm.
 
-![](img/6111792-daily-extreme-precip.png)
+<br>
 
-*Projected 24-hour accumulated precipitation frequency plot*
+```{r 6111792-daily-extreme-precip, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Projected 24-hour accumulated precipitation frequency plot for Collingwood."}
+  knitr::include_graphics('img/6111792-daily-extreme-precip.png')
+```
 
-
-
+<br>
 
 
 ## Streamflow Data
 
-Next, streamflow data are analysed to characterize large events based on hydrograph, baseflow, statistical analyses. Instantaneous (5 min) streamflow records have been acquired since 2011 at [02ED015: MAD RIVER BELOW AVENING](https://wateroffice.ec.gc.ca/report/real_time_e.html?stn=02ED015). This station is the sole hydrometric station available for model calibration.
+Next, streamflow data are analyzed to characterize large events based on hydrograph, baseflow, and statistical analyses. Instantaneous (5-minute) streamflow records have been acquired since 2011 at [02ED015: MAD RIVER BELOW AVENING](https://wateroffice.ec.gc.ca/report/real_time_e.html?stn=02ED015). This station is the sole hydrometric station available for model calibration.
 
 ### Flow Regime
 
-[From the daily historic records at 02EC015](https://owrc.shinyapps.io/sHyStreamflow/?sID=149142), it is apparent that there is a change in flow regime occurring sometime in 2005, where annual runoff yields show a definite increase relative to the pre-2005 period. This can be shown using cumulative discharge plots of both total flow and baseflow. 
-
-
-![](img/02ED015-cumulative.png)
-
-*cumulative discharge of both total flow and separated baseflow.*
+From the daily historic records at 02EC015 [(hosted here)](https://owrc.shinyapps.io/sHyStreamflow/?sID=149142), it is apparent that there was a change in flow regime that occurred sometime in 2005, where annual runoff yields show a definite increase relative to the pre-2005 period. This can be shown using cumulative discharge plots of both total flow and baseflow. 
 
 <br>
 
-Baseflow was determined as the median of [14 automated hydrograph separation methologies](https://owrc.github.io/info/hydrographseparation/). Below illustrates the wide range in baseflow estimates as the green ribbon and the median value in blue:
-
-![](img/02ED015-baseflow.png)
-
-*A sample of baseflow separation performed on the Mad River (02ED015) hydrograph.*
+```{r 02ED015-cumulative, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="cumulative discharge of both total flow and separated baseflow."}
+  knitr::include_graphics('img/02ED015-cumulative.png')
+```
 
 <br>
 
-Aggregating baseflow approximations during each calendar month shows significant seasonality in the baseflow regime that is clearly dominated by the spring freshet. Consequently, annual extreme discharge tends to occur during the spring months when water tables are high and snow is melting, making for wet antecedent conditions.
-
-![](img/02ED015-monthly-baseflow.png)
-
-*Distributions of monthly baseflow discharge. Notice how March-April-May have significantly greater yields than the rest of the year.*
+Baseflow was determined as the median of [14 automated hydrograph separation methodologies](https://owrc.github.io/info/hydrographseparation/):
 
 <br>
 
-![](img/02ED015 extremes dist.png)
-
-*Distribution of annual extremes shows prevalence for spring occurrence.*
+```{r 02ED015-baseflow, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="A sample of baseflow separation performed on the Mad River (02ED015) hydrograph."}
+  knitr::include_graphics('img/02ED015-baseflow.png')
+```
 
 <br>
+
+The hydrograph in Figure \@ref(fig:02ED015-baseflow) [(also available here)](https://owrc.shinyapps.io/sHyStreamflow/?sID=149142) illustrates the wide range in baseflow estimates (the green ribbon) as well as the median value (blue)
+
+Aggregating baseflow approximations during each calendar month shows significant seasonality in the baseflow regime that is clearly dominated by the spring freshet. Consequently, annual extreme discharge tends to occur during the spring months when water tables are high and snow is melting. This makes for wet antecedent conditions at this time of the year.
+
+<br>
+
+```{r 02ED015-monthly-baseflow, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Distributions of monthly baseflow discharge. Notice how March-April-May have significantly greater yields than the rest of the year."}
+  knitr::include_graphics('img/02ED015-monthly-baseflow.png')
+```
+
+<br>
+
+<br>
+
+```{r 02ED015-extremes-dist, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Distribution of annual extremes shows prevalence for spring occurrence."}
+  knitr::include_graphics('img/02ED015 extremes dist.png')
+```
+
+<br>
+
 
 ### Peak Flow Events
 
-For model calibration, efforts were made to isolate events that are not caused by snowmelt nor occurred during seasonally wet/freshet conditions. This way, the rainfall-runoff relationship can be assessed without any additional influence of wet conditions. Only events occurring from June through September are considered.  
-
-<a name="extr.freq"></a><br>
-
-![](img/02ED015 summer extremes (Jun-Sep).png){width=75%}
-
-*Peak flow frequency of summer (Jun-Sep) events only. Calibration and validation events are encircled.*
+For model calibration, efforts were made to isolate events that are not caused by snowmelt nor those that occurred during seasonally wet/freshet conditions. This way, the rainfall-runoff relationship can be assessed without any additional influence of wet conditions. Only events occurring from June through September are considered.  
 
 <br>
 
-```{r evnt.table, echo=FALSE, message=FALSE, warning=FALSE}
+```{r extr-freq, echo=FALSE, message=FALSE, warning=FALSE, out.width="75%", fig.cap="Peak flow frequency of summer (Jun-Sep) events only. Calibration and validation events are encircled."}
+  knitr::include_graphics('img/02ED015 summer extremes (Jun-Sep).png')
+```
+
+<br>
+
+```{r evnt-table, echo=FALSE, message=FALSE, warning=FALSE}
 read.csv("E:/Sync/@dev/go/src/ORMGP Modelling/HEC-HMS/event-summary-MadRiver23.csv") %>%
   filter(year!=2013) %>%
+  mutate(Date=format(as.Date(dtb),"%b %Y")) %>%
   subset(select=-c(dtb,dte)) %>%
-  rename('Year'='year', 'Rainfall (mm)'='ptot', "Runoff (mm)"='qtot', "Peak Discharge (m³/s)"='qmax', "Initial Discharge (m³/s)"='q0') %>%
-  arrange(Year) %>%
+  rename('Rainfall (mm)'='ptot', "Runoff (mm)"='qtot', "Peak Discharge (m³/s)"='qmax', "Initial Discharge (m³/s)"='q0') %>%
+  arrange(year) %>%
+  subset(select=-year) %>%
   mutate(`Use*`=c('valid.','valid.','valid.','calibr.','calibr.','valid.','calibr.','calibr.','valid.','calibr.','calibr.')) %>%
-  relocate(`Use*`, .after = Year) %>%
-  kable(caption = 'Selected extreme flow events for modelling to 02ED015.', digits=1, format = "html", table.attr = "style='width:80%;'") %>%
+  relocate(Date) %>%
+  relocate(`Use*`, .after = Date) %>%
+  kable(caption = 'Extreme flow events selected for modelling to 02ED015.', digits=1, format = "html", table.attr = "style='width:80%;'") %>%
   kable_styling(position = "left")
 ```
 
@@ -243,25 +268,31 @@ _* calibr.=calibration; valid.=validation_
 
 ### Timescale
 
-A comparison of timescales was performed to identify the model time step. Discharge is available at the 5 minute time step, which is considered close to instantaneous. Below, the instantaneous data are aggregated 4 ways: 15-minute rolling average, 6-hour rolling average, 24-hour rolling average and the daily mean step function. While little difference can be seen at the 15-minute interval, discrepancies tend to show the coarser the time step: daily peak discharge tend to be half that of the instantaneous peak discharge during summer events. 
+A comparison of timescales was performed to identify the model time step. Discharge is available at the 5-minute time step, which is considered close to instantaneous. Below, the instantaneous data are aggregated four ways: 15-minute rolling average, 6-hour rolling average, 24-hour rolling average and the daily mean step function. Discrepancies tend to appear the coarser the time step: daily mean peak discharge tends to be half that of the instantaneous peak discharge during summer events.
 
-![](img/compare1.png){width=75%}
-
-*Comparison of streamflow at different averaging intervals at [02ED015: MAD RIVER BELOW AVENING](https://wateroffice.ec.gc.ca/report/real_time_e.html?stn=02ED015).*
 
 <br>
 
-Most importantly, the 6-hourly hydrograph exhibits minor difference from the instantaneous hydrograph for 2-10 year events, which is promising as the input climate data set used in this exercise is aggregated to this scale. The model is set to run at a 15 minute time step.
+```{r compare1, echo=FALSE, message=FALSE, warning=FALSE, out.width="75%", fig.cap="Comparison of streamflow (m³/s) at different averaging intervals at [02ED015: MAD RIVER BELOW AVENING](https://wateroffice.ec.gc.ca/report/real_time_e.html?stn=02ED015)."}
+  knitr::include_graphics('img/compare1.png')
+```
+
+<br>
+
+
+Most importantly, the 6-hourly hydrograph exhibits minor difference from the instantaneous hydrograph for 2 to 10 year events, which is promising as the input climate data set used in this exercise is aggregated to this 6-hourly scale. The model is set to run at a 15-minute time step.
 
 
 
 ### Recession Coefficient
 
-A HEC-HMS model input is the baseflow coefficient: an exponential law of streamflow recession. Web applications hosted by the ORMGP contains an automated recession coefficient calculator by plotting discharge vs, the discharge the following day, if and only if the succeeding day's discharge is the lesser of the two. The slope of the plotting a line enveloping the base of the scatter plot defines the recession coefficient:
+One necessary HEC-HMS model input parameter is the baseflow coefficient: an exponential law of streamflow recession. The web application hosted by the ORMGP contains an automated recession coefficient calculator, determined by plotting discharge versus the discharge the following day, if and only if the succeeding day's discharge is the lesser of the two. The slope of the plotting a line enveloping the base of this scatter plot defines the recession coefficient:
 
-![](img/recession-coef.png){width=75%}
+<br>
 
-*Automated recession coefficient estimate (ORMGP, 2023).*
+```{r recession-coef, echo=FALSE, message=FALSE, warning=FALSE, out.width="75%", fig.cap="Automated recession coefficient estimate (ORMGP, 2023)."}
+  knitr::include_graphics('img/recession-coef.png')
+```
 
 <br>
 
@@ -270,7 +301,8 @@ Recession coefficient $k$ is defined as:
 $$
   Q_t=kQ_{t-1}
 $$
-for the Mad River at Avening:
+
+for the Mad River below Avening (02ED015):
 
 $$
   k=0.979
@@ -282,7 +314,7 @@ $$
 
 ## Geospatial Data
 
-The HEC-HMS model design is dependent on a number of digital geospatial data sets including but not limited to soils and land use mapping that define the function of "hydrologic response units" (HRUs), and topography needed delineate appropriate catchment areas, define flow lengths and catchment slopes.
+The HEC-HMS model design is dependent on several digital geospatial data sets including, but not limited to, soils and land use mapping that defines the function of "hydrologic response units" (HRUs). Topography needed delineate appropriate catchment areas, also defines flow lengths and catchment slopes.
 
 
 ### DEM
@@ -293,13 +325,15 @@ The digital elevation model (DEM) defines the physical constraints of the HEC-HM
   1. SCOOP 2013, package A.
 
 
-<!-- ![](img/Ortho-capture.PNG) -->
-
-![](img/dem-screencapture.png)
-
-*Screen capture of the Provincial DEM source. [metadata](https://www.arcgis.com/sharing/rest/content/items/1ce266ee55c44ffca2d457bc5db13b92/info/metadata/metadata.xml?format=default&output=html).*
 
 <br>
+
+```{r dem-screencapture, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Screen capture of the Provincial DEM source. [metadata](https://www.arcgis.com/sharing/rest/content/items/1ce266ee55c44ffca2d457bc5db13b92/info/metadata/metadata.xml?format=default&output=html)."}
+  knitr::include_graphics('img/dem-screencapture.png')
+```
+
+<br>
+
 
 
 The 2m provincial DEM is upscaled to a 10m (horizontal resolution) DEM raster with:
@@ -314,77 +348,104 @@ Using HEC-HMS's native ["GIS" package](https://www.hec.usace.army.mil/confluence
 ### Land Use and Surficial Geology
 
 
-SOLRIS v3.0 (OMNR, 2019a) provides as a set of land use identifiers. From these, a look-up table is used to assign data-based model parameters such as percent imperviousness and initial abstractions.
-
-
-
-#### Percent Impervious
-
-![](img/basin-imp.png){width=85%}
-
-*Percent imperviousness based on SOLRIS mapping.*
-
-<a name="lusg.ia"></a>
-#### Initial Abstraction
-
-With SOLRIS land use mapping, canopy cover density is distributes to provides first estimates of initial abstraction capacities:
-
-![](img/basin-cov.png){width=85%}
-
-*Relative vegetation cover based on SOLRIS mapping.*
+The Southern Ontario Land Resource Information System (SOLRIS v3.0---OMNR, 2019a) provides a set of land use identifiers. From these, a look-up table is used to assign data-based model parameters such as percent imperviousness and initial abstractions.
 
 <br>
 
+```{r solris-lookup, echo=FALSE, message=FALSE, warning=FALSE}
+read.csv("E:/Sync/@gis/Landuse/SOLRIS_3.0/lookup_200731.csv") %>%
+  subset(select=-c(ï..Value,ELC.code,Description)) %>%
+  mutate(PerImp=PerImp*100,PerCov=PerCov*100) %>%
+  rename("Name"="SOLRIS.class.name", "% impervious"="PerImp", "% cover"="PerCov") %>%
+  mutate(across('Name', str_replace, 'â€“', '-')) %>%
+  kable(caption = 'SOLRIS look-up table', digits=1, format = "html", table.attr = "style='width:85%;'") %>%
+  kable_styling(position = "left")
+```
+
+<br>
+
+#### Percent Imperviousness
+
+```{r basin-imp, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Percent imperviousness based on SOLRIS mapping."}
+  knitr::include_graphics('img/basin-imp.png')
+```
+
+<br>
+
+#### Initial Abstraction
+
+With SOLRIS land use mapping, canopy cover density is distributed to provide first estimates of initial abstraction capacities:
+
+<br>
+
+```{r basin-cov, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Relative vegetation cover based on SOLRIS mapping. Darker greens reflect greater cover density."}
+  knitr::include_graphics('img/basin-cov.png')
+```
+
+<br>
+
+
+
 #### Soil Characteristics
 
-Surficial Geology (OGS, 2010) defines soil characteristics. The OGS layers are attributed with a set of relative permeabilities used to map ["Hydrologic Soil Groups"](https://directives.sc.egov.usda.gov/OpenNonWebContent.aspx?content=17757.wba). For the *"PERMEABILI"* attribute of the OGS (2010) layer, soil groups (A, B, C, D) are mapped to (High, Medium, Low-medium, Low) permeabilities. 
+Surficial Geology mapping (OGS, 2010) was used to define soil characteristics. The OGS layer is attributed with a set of "relative permeabilities" There are used to map so-called ["Hydrologic Soil Groups"](https://directives.sc.egov.usda.gov/OpenNonWebContent.aspx?content=17757.wba). Using the *"PERMEABILI"* attribute of the OGS (2010) layer, soil groups (A, B, C, D) are mapped to (High, Medium, Low-medium, Low) permeabilities. This was needed to estimate infiltration loss parameters for the Upper Mad River Watershed:
 
+<br>
 
-needed to estimate infiltration loss parameters for the Upper Mad River Watershed are determined:
+```{r basin-k, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Relative infiltration rates based on OGS (2010). The darker the blue, the less permeable the soil; yellows are the most permeable."}
+  knitr::include_graphics('img/basin-k.png')
+```
 
-![](img/basin-k.png){width=85%}
-
-*Relative infiltration rates based on OGS (2010). The darker the blue, the less permeable the soil.*
-
-
+<br>
 
 
 ### Composite Layers
 
 
-SOLRIS land use (OMNR, 2019a) and OGS (2010) surficial geology are combined to determine SCS Curve Numbers (CN) using standard [SCS lookup tables](https://www.hec.usace.army.mil/confluence/hmsdocs/hmstrm/cn-tables).
+SOLRIS land use (OMNR, 2019a) and OGS surficial geology (2010) are combined to determine SCS Curve Numbers (CN) using standard [SCS lookup tables](https://www.hec.usace.army.mil/confluence/hmsdocs/hmstrm/cn-tables).
 
 
 #### Curve Number
 
-![](img/basin-cn.png){width=85%}
+The SCS Curve Number (CN) is dependent on the land use type and the hydrologic soil group. From [standard [SCS lookup tables](https://www.hec.usace.army.mil/confluence/hmsdocs/hmstrm/cn-tables), CNs can be mapped:
 
-*SCS Curve Numbers based on a geospatial overlay of SOLRIS and OGS surficial geology. Darker blue: higher CN.*
+<br>
 
+```{r basin-cn, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="SCS Curve Numbers based on a geospatial overlay of SOLRIS and OGS surficial geology. Darker blue: higher CN."}
+  knitr::include_graphics('img/basin-cn.png')
+```
 
 <br>
 
 
 
 
-# HEC-HMS modelling
+# HEC-HMS Modelling
 
 
-Upper Mad River Hydrologic Model is built using [HEC-HMS](https://www.hec.usace.army.mil/software/hec-hms/) (Task 1.2). The HEC-HMS model consists of 27 subbasins, 25 of which drain to the sole hydrometric station at Avening. The HEC-HMS model was designed for event-based analysis using the SCS-CN methodology for runoff generation, a Syder unit hydrograph for basin transfer, a simple lag function for reach transfer and a simple recession coefficient baseflow simulator activated by a ratio to simulated peak (USACE, 2000).  
+The Upper Mad River Hydrologic Model is built using [HEC-HMS](https://www.hec.usace.army.mil/software/hec-hms/) (Task 1.2). The HEC-HMS model consists of 27 subbasins, 25 of which drain to the sole hydrometric station at Avening. The HEC-HMS model was designed for event-based analysis. Model design included (USACE, 2000):
+
+- the SCS-CN methodology for runoff generation, 
+- th Syder unit hydrograph for basin transfer
+- a simple lag function for reach transfer, and 
+- a simple recession coefficient baseflow simulator that is activated by a ratio to simulated peak.  
 
 
-## Climate zones and subbasins
+## Climate Zones and Subbasins
 
-Climate zones/subbasins are delineated based on the DEM and were built internally using HEC-HMS's GIS package. Meteorological and streamflow data processing for the Upper Mad River watershed are confined within these bounds:
+Climate zones/subbasins were delineated based on the DEM and were built internally using HEC-HMS's GIS package. Meteorological and streamflow data processing for the Upper Mad River watershed are confined within these bounds:
 
-![](img/basin-compare.png)
+<br>
 
-*Map of HEC-HMS-derived subbasins (blue) comapred to the basins provided by the NVCA (red).*
+```{r basin-compare, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Map of HEC-HMS-derived subbasins (blue) compared to the basins provided by the NVCA (red)."}
+  knitr::include_graphics('img/basin-compare.png')
+```
 
 <br>
 
 
-## Model structure
+
+## Model Structure
 
 <!-- ```{r tbl.subbsn, echo=FALSE, message=FALSE, warning=FALSE} -->
 <!-- kable(df, caption = 'cell-border stripe', format = "html", table.attr = "style='width:30%;'") -->
@@ -392,25 +453,26 @@ Climate zones/subbasins are delineated based on the DEM and were built internall
 
 
 The (sub-)models used in the HEC-HMS design include:
-- Loss method: Soil Conservation Service (SCS) curve number
-- Transform method: Snyder unit hydrograph
-- Routing method: simple lag
-- Routing method: simple recession
+
+- Loss method: Soil Conservation Service (SCS) curve number;
+- Transform method: Snyder unit hydrograph;
+- Routing method: simple lag; and
+- Baseflow method: simple recession.
 
 
 
-## Model parameters
+## Model Parameters
 
-Some "free" parameters are applied uniformly (i.e., globally) across the model. Differences in the water budgeting at each subbasin would then attributed to:
+Some *"free"* parameters are applied uniformly (i.e., globally) across the model. Differences in the water budgeting at each subbasin are then attributed to:
 
 1. land use mapping
 1. surficial geology mapping
 1. topography (DEM), defining: 
- - subbasin form;
- - channel length; and 
- - channel slope.
+    - subbasin form;
+    - channel length; and 
+    - channel slope.
 
-[*Subbasin parameter assignment can be inspected above.*](#sws.leaflet)
+> Subbasin parameter assignment can be inspected in the interactive Figure \@ref(fig:leaflet)
 
 Calibration parameters include:
 
@@ -429,21 +491,21 @@ Calibration parameters include:
 
 ## Event Selection
 
-A total of 11 annual extreme events are selected, 6 used for calibration, 5 for validation. All selected events exceed bankfull discharge (defined here as events exceeding the 1.5 year return flow). Events are [highlighted above](#extr.freq).  
+A total of 11 annual extreme events are selected (Table \@ref(tab:evnt-table)), 6 are used for calibration, 5 for validation. All selected events exceed bankfull discharge (defined  here as events exceeding the 1.5 year return flow). Events are encircled in Figure \@ref(fig:extr-freq).  
 
-Selection of the calibration and validation events were made randomly from the initial 11 events. A twelfth event, occurring in 2013 looks to be a choice event, but for reasons discussed below, this event had to be excluded, unfortunately.
+Selection of the calibration and validation events were made randomly from the initial 11 events. A twelfth event, occurring in 2013 looks to be a choice event, but for reasons discussed below, this event unfortunately had to be excluded.
 
 
-## Model calibration and verification
+## Model Calibration and Verification
 
 The HEC-HMS hydrologic model was calibrated and verified using available streamflow gauge data (Task 1.3). A range of annual extreme events exceeding the 1.5-yr return period are used to simulate the flood flow regime.
 
-The events selected provide a wide range of peak discharges for both the calibration and validation exercises. Given that there's only a decades worth of events, it is unlikely that extreme discharges (say greater than a 20-year return) have not been observed and will thus not constrain the model.
+The events selected span a wide range of peak discharges for both the calibration and validation exercises. Given that there is a decade's worth of events, it is unlikely that extreme discharges (say greater than a 20-year return) have not been observed and will thus not constrain the model.
 
 
-### Objective function
+### Objective Function
 
-Calibration and validation was optimized both by visual fit and objective function minimization. The objective function targeted is the peak-weighted root mean square error described in USACE (1998):
+Calibration and validation were optimized both by visual fit and objective function minimization. The objective function targeted is the peak-weighted root mean square error described in USACE (1998):
 
 $$
   Z = \sqrt{\frac{1}{n}\sum^n\left[ \left(q_s-q_o\right)^2\cdot\left(\frac{q_o-\overline{q_o}}{\overline{q_o}}\right)\right]}
@@ -455,62 +517,71 @@ where $q_s$, $q_o$ and $\overline{q_o}$ are the simulated, observed and mean-obs
 
 ### Calibration
 
-The model fairs well at matching peak discharge for a wide range of events up to the 10-year return. There are 2 characteristically different hydrographs observed amongst the calibration set: 2014, 2018 and 2020 exhibit a short-duration flashy response, while 2010, 2011 and 2015 demonstrate events that appear to have greater storage and lag. This lag may be a sign of wetter antecedent conditions as the initial discharge $Q_0$ tend to be higher compared to the flashy events.
-
-![](img/calib.png)
-
-*Calibration performed to 6 annual extreme events.*
+The model fairs well at matching peak discharge for a wide range of events up to the 10-year return. There are 2 characteristically different hydrographs observed amongst the calibration set: the 2014, 2018 and 2020 events exhibit a short-duration flashy response, while the 2010, 2011 and 2015 events demonstrate events that appear to have greater storage and lag. This lag may be a sign of wetter antecedent conditions as the initial discharge $Q_0$ tends to be higher compared to the flashy events.
 
 <br>
 
-
-### Validation
-
-The validation events as expected don't perform as well as the calibration set. Overall 3 of the 5 (2002, 2008 and 2012) performed well. During the iterative process of calibration and validation, years 2009 and 2017 were notoriously difficult to hone in, without sacrificing the performance of the calibration set. They are nonetheless included here for the sake of transparency.
-
-![](img/verif.png)
-
-*Validation performed to 5 annual extreme events.*
+```{r calib, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Calibration performed to 6 annual extreme events."}
+  knitr::include_graphics('img/calib.png')
+```
 
 <br>
 
 
 
-### Sensitivity analysis
+### Varification
 
-FIve parameters ($c_t$, $r_p$, $lag$, $f_{ia}$, and $f_{CN}$) were fed into a Shuffled Complex Evolution (SCE - Duan et.al., 1993) optimization scheme. Subbasin lag coefficient performed best when minimized ($t_p=0$) , indicating that the upper Mad River watershed modelled is quite flashy. (The recession coefficient $k$ was determined from flow records and the Snyder UH peaking coefficient was kept at a constant value $c_p=0.4$.) A global calibration is performed on subsets of 6 The 11 events. Choosing 6 of 11 events yields $_{11}C_6=462$ SCE trials that are optimized and compared to assess two crucial issues with numerical model calibration, namely:
+The varification events as expected do not perform as well as the calibration set. Overall, 3 of the 5 events (2002, 2008 and 2012) performed well. During the iterative process of calibration and validation, the 2009 and 2017 events were notoriously difficult to simulate, without sacrificing the performance of the calibration set. They are nonetheless included here for the sake of transparency.
+
+<br>
+
+```{r verif, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Model varification performed to 5 annual extreme events."}
+  knitr::include_graphics('img/verif.png')
+```
+
+<br>
+
+
+
+
+### Sensitivity Analysis
+
+Five parameters ($c_t$, $r_p$, $lag$, $f_{ia}$, and $f_{CN}$) were fed into a Shuffled Complex Evolution (SCE - Duan et.al., 1993) optimization scheme. Subbasin lag coefficient performed best when minimized ($t_p=0$) , indicating that the modelled upper Mad River watershed is quite flashy. (The recession coefficient $k$ was determined from flow records and the Snyder UH peaking coefficient was kept at a constant value $c_p=0.4$.) A global calibration is performed on subsets of 6 The 11 events. Choosing 6 of 11 events yields $_{11}C_6=462$ SCE trials that are optimized and compared in order to assess two crucial issues with numerical model calibration, namely:
 
 1. Parameter inter-dependence: Can the selection of a parameter value be confidently estimated by another parameter, if so, then the dimensionality of the inverse problem is reducible, and
-1. parameter identifiability: Are there optimized parameters that appear to seek a particular/unique value?
+1. Parameter identifiability: Are there optimized parameters that appear to seek a particular/unique value?
 
 Below the results are presented in the form of a correlation matrix. This figure will highlight cross-correlation either visually (lower-left scatter plots) and statistically (upper-right listed coefficient of determinations). Identifiability can be determined visually from the density plots along the diagonal: plots that show greater peakedness (less spread) are deemed most sensitive to change.
 
-![](img/corr-matrix-final.png)
-
-*Model parameter correlation matrix built for sensitivity analysis. `zfinal` is the average peak-weighted RMSE minimized by the SCE scheme.*
 
 <br>
 
-It is evident from the above plot that:
+```{r corr-matrix-final, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Model parameter correlation matrix built for sensitivity analysis. `zfinal` is the average peak-weighted RMSE minimized by the SCE scheme."}
+  knitr::include_graphics('img/corr-matrix-final.png')
+```
+
+<br>
+
+Key takeaways from Figure \@ref(fig:corr-matrix-final):
 
 1. initial abstraction $(i_a)$ and reach $lag$ appear to perform best when minimized---resulting from the flashiness of the selected events;
-1. ratio to peak $(r_p)$ appears to be the most identifiable, meaning the its calibrated value has the greatest confidence and that the model is most sensitive to change in $r_p$; and
+1. ratio to peak $(r_p)$ appears to be the most identifiable, meaning that its calibrated value has the greatest confidence and that the model is most sensitive to change in $r_p$; and
 1. CN values appear to correlate well with the Snyder UH basin coefficient $(c_t)$---meaning that changes to one parameter can be compensated by the other, and thus the model's sensitivity to these parameters would have been overstated should a global sensitivity analysis (as done here) had not been performed.
 
 <br>
 
 
 
-## Event modelling
+## Event Modelling
 
-With the calibrated parameter set, the model is then run through a set of scenarios. Two designed storms, the SCS type II method and the Timmins storm are applied as per NVCA guidelines. In addition, a projected storm under a changing climate is applied. 
+With the calibrated parameters and the model set, the model is then run through a set of scenarios. Two designed storms, the SCS type II method and the Timmins storm are applied as per NVCA guidelines. In addition, a projected storm under a changing climate is applied. 
 
 
 ### Design Storms
 
-Three forms synthetic hyetographs are developed to test design events now and under the changing climate. The Timmins Storm is pre-defined while the SCS type II design storms and the climate change projections are constructed using the "alternating block" synthetic hyetographs (NRC-PCS, 2018).
+Three forms of synthetic hyetographs are developed to test design events now and under the changing climate. The Timmins Storm is pre-defined while the SCS type II design storms and the climate change projections are constructed using the "alternating block" synthetic hyetographs (NRC-PCS, 2018).
 
-Application of these storms are multiplied by areal reduction factors (as function of the study area's "circular drainage area"---EWRG, 2017). Here, the Mad Rive model has an approximate 415 km² circular drainage area.
+Application of these storms are multiplied by areal reduction factors (as a function of the study area's "circular drainage area"---EWRG, 2017). Here, the Mad River model has an approximate 415 km² circular drainage area.
 
 ```{r results-load, include=FALSE}
   df.results.timmins <- read_excel("O:/MadRiver23/HEC-HMS/results/scenarios.xlsx",'Timmins')
@@ -539,16 +610,16 @@ A 193 mm, 12-hour storm was recorded in Timmins, Ontario on [August 31, 1961](ht
 | 10 | 13 | 9.88 |
 | 11 | 13 | 9.88 |
 | 12 | 8 | 6.08 |
-</div>
+</div><br>
 
 
 
 #### SCS type II
 
-The 2, 5, 10, 25, 50, 100-year SCS type II 24-hour design storms were re-casted as synthetic hyetographs using the alternate block method. 24-hour rainfall return periods were taken (conservatively) as the maximum posted 24-hour return intensities of four local meteorological stations: 
+The 2-, 5-, 10-, 25-, 50-, and 100-year SCS type II 24-hour design storms were re-casted as synthetic hyetographs using the alternate block method. 24-hour rainfall return periods were taken (conservatively) as the maximum posted 24-hour return intensities (mm) of four local meteorological stations with IDF curves: 
 
 <div class="table75">
-| T (years) | Collingwood | Barrie | Egbert | Barrie Oro | max |
+| T (years) | Collingwood | Barrie* | Egbert | Barrie Oro | max |
 |:---|:---|:---|:---|:---|:---:|
 | 2 | 46.7 | 47.4 | 40.5 | 43.4 | 47.4 |
 | 5 | 60.6 | 63.8 | 55.2 | 52.2 | 63.8 |
@@ -556,11 +627,17 @@ The 2, 5, 10, 25, 50, 100-year SCS type II 24-hour design storms were re-casted 
 | 25 | 81.6 | 94.0 | 88.2 | 65.6 | 94.0 |
 | 50 | 90.3 | 108.8 | 107.3 | 71.2 | 108.8 |
 | 100 | 99.0 | 125.1 | 130.4 | 76.8 | 130.4 |
-</div><br>
+</div>
 
-and the resulting hyetographs:
+_* Barrie is no longer an active station, however an IDF curve is available._
 
-```{r scsii-rainfall, echo=FALSE, message=FALSE, warning=FALSE}
+<br>
+
+This produces the hyetographs:
+
+<br>
+
+```{r scsii-rainfall, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="SCS type II 24-hour design storm hyetographs."}
 # scsii <- c( # 12-hour
 #   0.020400000000000026,0.024949999999999996,0.03149999999999999,0.04018333333333332,
 #   0.062425000000000015,0.45719166666666694,0.18298333333333305,0.05876666666666666,
@@ -592,19 +669,21 @@ df.scs %>% ggplot(aes(hour,precip)) +
   xlim(c(1,24))
 ```
 
-*SCS type II 24-hour design storm hyetographs*
-
 <br>
 
 #### Results
 
-```{r timmins.result, echo=FALSE, message=FALSE, warning=FALSE}
+<br>
+
+```{r timmins-result, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Modelled dicharge under the Timmins design storm."}
 df.results.timmins %>%
   ggplot() + theme_bw() + geom_line(aes(minute/60,cms), linewidth=1) +
-  labs(x="hour",y="discharge (m³/s)",title="Timmins design storms",subtitle="02ED015: Mad River below Avening")
+  labs(x="hour",y="discharge (m³/s)",title="Timmins design storm",subtitle="02ED015: Mad River below Avening")
 ```
 
-```{r scsii.result, echo=FALSE, message=FALSE, warning=FALSE}
+<br>
+
+```{r scsii-result, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Modelled dicharges under the SCS type II design storms."}
 f1 = 8
 x0 = 17
 df.results.scsii %>%
@@ -626,17 +705,18 @@ df.results.scsii %>%
     labs(x="hour",y="discharge (m³/s)",title="SCS type II 24-hour duration design storms",subtitle="02ED015: Mad River below Avening")
 ```
 
+<br>
 
 ### Climate Change
 
-Climate change scnearios are built using projected IDF curves offer by the [IDF-CC](https://www.idf-cc-uwo.ca/) tool (Simonovic et.al., 2015). Like the SCS method, the alternating block approach is used to convert the IDF curve into a design hyetograph. The IDF-CC design storm is processed as follows:
+Climate change scenarios are built using projected IDF curves offered by the [IDF-CC](https://www.idf-cc-uwo.ca/) tool (Simonovic et.al., 2015). Like the SCS method, the alternating block approach is used to convert the IDF curve into a design hyetograph. The IDF-CC design storm is processed as follows:
 
 1. The [IDF-CC](https://www.idf-cc-uwo.ca/) design support tool was used to acquire current and projected Intensity-Duration-Frequency (IDF) curves. From this tool, the [CMIP6](https://esgf-node.llnl.gov/projects/cmip6/) ensemble, downscaled and biased corrected as per [PCIC](https://www.pacificclimate.org/data/statistically-downscaled-climate-scenarios), are packaged into future projected IDF curves.
 1. 3 climate change scenarios (RCP 2.4, 4.5 and 8.5) are considered.
 1. IDFs produced for the time horizons 2015-2045 and 2045-2100 are compared with current IDF curves, i.e., 3 IDFs per scenario.
-1. The 100-year return precipitation events are created using the alternating block approach following the Natural Resources Canada document: *Case studies on climate change in floodplain mapping*.
+1. The 100-year return precipitation events are created using the alternating block approach following the Natural Resources Canada document: *Case studies on climate change in floodplain mapping* (NRC, 2018).
 
-In total this comes to $3\times 3 \times 1=9$ model runs.
+<!-- In total this comes to $3\times 3 \times 1=9$ model runs. -->
 
 
 #### IDF
@@ -649,7 +729,7 @@ $$
 
 where $i$ is rainfall rate (mm/hr), $t$ duration of precipitation event (hr), $A$, $B$ and $t_0$ are coefficients provided by the IDF-CC tool. According to Simonovic et.al. (2015) the IDF parameters for the study area are:
 
-<div class="table25">
+<br><div class="table25">
 | T (years) |	Coefficient $A$ |	Coefficient $B$ |	Coefficient $t_0$ |
 |:---|---:|---:|---:|
 | 2  	| 22.1	| -0.755	| 0.070 |
@@ -666,7 +746,9 @@ where $i$ is rainfall rate (mm/hr), $t$ duration of precipitation event (hr), $A
 
 #### Results
 
-```{r cc2015.result, echo=FALSE, message=FALSE, warning=FALSE}
+<br>
+
+```{r cc2015-result, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Projected change in runoff from a 2-100 year rainfall event, 2015-2045."}
 df.results.CC %>%
   ggplot(aes(x=minute/60)) + 
   theme_bw() + theme(legend.position = c(.9,.9), legend.title = element_blank(), legend.justification = c(1,1)) +
@@ -693,7 +775,7 @@ df.results.CC %>%
 
 <br>
 
-```{r cc2045.result, echo=FALSE, message=FALSE, warning=FALSE}
+```{r cc2045-result, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Projected change in runoff from a 2-100 year rainfall event, 2045-2100."}
 df.results.CC %>%
   ggplot(aes(x=minute/60)) + 
   theme_bw() + theme(legend.position = c(.9,.9), legend.title = element_blank(), legend.justification = c(1,1)) +
@@ -720,7 +802,7 @@ df.results.CC %>%
 
 <br>
 
-```{r cc.table, echo=FALSE, message=FALSE, warning=FALSE}
+```{r cc-table, echo=FALSE, message=FALSE, warning=FALSE}
 df.results.CC %>%
   gather("scenario","q",-minute) %>%
   mutate(Tret=stringi::stri_reverse(scenario),
@@ -746,11 +828,13 @@ df.results.CC %>%
 ## Discussion
 
 
-### Omission of the 2013 storm
+### Omission of the 2013 Storm
 
-The July 8, 2013 storm was a notable event, causing mass power outages and leaving stranded cars and even trains. It was also a particularly distinct event observed at the 02ED015 stream flow gauge that would be an obvious target for modelling extreme events. For reasons best described by plot below, there was a mismatch in data availability preventing model calibration to this event.
+The July 8, 2013 storm was a notable event, causing mass power outages and leaving stranded cars and even trains in the GTA. It was also a particularly distinct event observed at the 02ED015 Avening stream flow gauge and would be an obvious target for modelling extreme events. For reasons best described by the plot below, there was a mismatch in data availability preventing model calibration to this event.
 
-```{r evnt.scatter, echo=FALSE, message=FALSE, warning=FALSE}
+<br>
+
+```{r evnt-scatter, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%", fig.cap="Rainfall-runoff magnitudes of 12 recent flood events."}
 # read.csv("E:/Sync/@dev/go/src/ORMGP Modelling/HEC-HMS/event-summary-MadRiver23.csv") %>%
 #   # filter(year!=2013) %>%
 #   ggplot(aes(x=ptot,y=qtot)) +
@@ -774,32 +858,32 @@ read.csv("E:/Sync/@dev/go/src/ORMGP Modelling/HEC-HMS/event-summary-MadRiver23.c
   labs(x='Total rainfall (mm)', y="Peak discharge (m³/s)", title="Rainfall-runnoff event summary",subtitle="02ED015: Mad River below Avening")
 ```
 
-*Rainfall-runoff magnitudes of 12 available flood events*
-
 <br>
 
 There is a clear discrepancy between the accumulative rainfall observed and both the peak and cumulative discharge measured at the Mad River gauge. The 2013 storm appears to be highly localized that failed to be registered by either the CaPA-RDPA system or the Environment Canada meteorological station network. Including the storm into the calibration required sacrifice that was too costly to the global calibration; thus the 2013 storm was omitted.
 
-Before doing so, an hourly hyetograph obtained from [Mount Forest (AUT)---6145504](https://climate.weather.gc.ca/climate_data/hourly_data_e.html?StationID=7844&txtStationName=mount+forest) was substitute for the 6-hourly to check whether rainfall intensity factored in the calibration mismatch. This was *not* the case. *NOTE: The Mount Forest (AUT) dataset is included with the model file delivery.*
+Before doing so, an *hourly* hyetograph obtained from the [Mount Forest (AUT)---6145504](https://climate.weather.gc.ca/climate_data/hourly_data_e.html?StationID=7844&txtStationName=mount+forest) meteorological station was substituted for the *6-hourly* CaPA-RDPA to check whether rainfall intensity factored in the calibration mismatch. This was *not* the case. 
+
+*NOTE: The Mount Forest (AUT) dataset is included with the model file delivery.*
 
 
-### Flashy system
+### Flashy System
 
 As evidenced by the tendency for model (calibration) performance to increase with decreased lag times, the modelling exercise suggests that the upper Mad River is a flashy system. Lag times had to be reduced to match the speed of rising limbs.
 
-It is recommended that future modelling of extreme events be performed with monitoring data at or below a 15 minute temporal resolution.
+It is recommended that future modelling of extreme events be performed with monitoring data at or below a 15-minute temporal resolution.
 
 
-### Initial abstractions
+### Initial Abstractions
 
-Along with lag times, sensitivity analysis showed that model calibration could be accomplished quite well while assuming initial abstractions can be neglected $(f_{ia}\rightarrow 0)$; a consequence of calibrating to flashy systems. The intent here is to produce a model with continuous modelling applicability; neglecting $i_a$ is untenable.
+Along with lag times, sensitivity analysis showed that model calibration could be accomplished quite well assuming initial abstractions can be neglected $(f_{ia}\rightarrow 0)$. This is a consequence of calibrating to flashy systems. However, given that the intent of this study was ta also develop a model with continuous modelling applicability, neglecting $i_a$ is untenable.
 
-Therefore, [cover density](#lusg.ia) was multiplied by a summertime standard leaf-area index $\text{LAI}=5$ to determine $i_a$ for each subbasin. Initial abstraction $(i_a)$ was kept constant and calibration proceeded by adjusting the remaining parameters.
+Therefore, cover density (Figure \@ref(fig:basin-cov)) was multiplied by a summertime standard leaf-area index $\text{LAI}=5$ to determine $i_a$ for each subbasin. Initial abstraction $(i_a)$ was kept constant and calibration proceeded by adjusting the remaining parameters.
 
 
-### Baseflow dependence
+### Baseflow Dependence
 
-There is some indication that the summer hydrograph form is affected by the state in groundwater levels. The Flashiest of storms tended to occur near the end of the summer season and when initial discharge $(Q_0)$ was relatively low. It appears that the groundwater and hydrological systems should *not* be de-coupled.
+There is some indication that the early summer hydrograph form is affected by the state in groundwater levels. The Flashiest of storms tended to occur near the end of the summer season and when initial discharge $(Q_0)$ was relatively low. It appears that the groundwater and hydrological systems should *not* be de-coupled in this system, especially when modelling the spring freshet seasons.
 
 
 
