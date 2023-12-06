@@ -1,0 +1,21 @@
+---
+title: "Rainfall-Runoff Modelling of the Mad River"
+author: "Oak Ridges Moraine Groundwater Program"
+date: "`r gsub(' 0', ' ', format(Sys.time(), '%d %B, %Y'))`"
+output:
+  bookdown::pdf_document2:
+    toc: yes
+    toc_float: yes
+    toc_depth: 4
+    extra_dependencies: ["flafter"]
+urlcolor: blue
+subtitle: "An event-based HEC-HMS model of the Upper Mad River watershed. Prepared
+  for the NVCA"
+always_allow_html: true
+---
+
+<style type="text/css">
+  .table25 {width: 25%;}
+  .table50 {width: 50%;}
+  .table75 {width: 75%;}
+</style>
