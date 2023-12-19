@@ -1,9 +1,17 @@
 ---
 title: "Rainfall-Runoff Modelling of the Mad River"
-subtitle: "An event-based HEC-HMS model of the Upper Mad River watershed. Prepared for the NVCA"
 author: "Oak Ridges Moraine Groundwater Program"
 date: "`r gsub(' 0', ' ', format(Sys.time(), '%d %B, %Y'))`"
-output: html_document
+output:
+  bookdown::pdf_document2:
+    toc: yes
+    toc_float: yes
+    toc_depth: 4
+    extra_dependencies: ["flafter"]
+urlcolor: blue
+subtitle: "An event-based HEC-HMS model of the Upper Mad River watershed. Prepared
+  for the NVCA"
+always_allow_html: true
 ---
 
 <style type="text/css">
@@ -33,7 +41,7 @@ knitr::opts_chunk$set(fig.pos = "H", out.extra = "")
 ```
 
 ```{r main.load, include=FALSE}
-df <- read.csv("O:/MadRiver23/02-goHECHMS/HEC-HMS_subbasins.csv")
+df <- read.csv("M:/MadRiver23/modelling/02-goHECHMS/HEC-HMS_subbasins.csv")
 ```
 
 
@@ -88,7 +96,7 @@ This has been prepared to satisfy the agreement between NVCA and ORMGP with resp
 <br>
 
 ```{r leaflet, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Mad River HEC-HMS subbasins (click on basins to see properties)"}
-subbasins <- st_transform(st_read("O:/MadRiver23/HEC-HMS/MadRiver23/maps/HEC-HMS_subbasins.shp", quiet=TRUE), 4326)
+subbasins <- st_transform(st_read("M:/MadRiver23/modelling/HEC-HMS/MadRiver23/maps/HEC-HMS_subbasins.shp", quiet=TRUE), 4326)
 
 leaflet(subbasins) %>%
   addTiles() %>%
@@ -611,9 +619,9 @@ Three forms of synthetic hyetographs are developed to test design events now and
 Application of these storms are multiplied by areal reduction factors (as a function of the study area's "circular drainage area"---EWRG, 2017). Here, the Mad River model has an approximate 415 km² circular drainage area.
 
 ```{r results-load, include=FALSE}
-  df.results.timmins <- read_excel("O:/MadRiver23/HEC-HMS/results/scenarios.xlsx",'Timmins')
-  df.results.scsii <- read_excel("O:/MadRiver23/HEC-HMS/results/scenarios.xlsx",'SCSII')
-  df.results.CC <- read_excel("O:/MadRiver23/HEC-HMS/results/scenarios.xlsx",'climate change')
+  df.results.timmins <- read_excel("M:/MadRiver23/modelling/HEC-HMS/results/scenarios.xlsx",'Timmins')
+  df.results.scsii <- read_excel("M:/MadRiver23/modelling/HEC-HMS/results/scenarios.xlsx",'SCSII')
+  df.results.CC <- read_excel("M:/MadRiver23/modelling/HEC-HMS/results/scenarios.xlsx",'climate change')
 ```
 
 
@@ -741,7 +749,7 @@ df.results.scsii %>%
 Climate change scenarios are built using projected IDF curves offered by the [IDF-CC](https://www.idf-cc-uwo.ca/) tool (Simonovic et.al., 2015). Like the SCS method, the alternating block approach is used to convert the IDF curve into a design hyetograph. The IDF-CC design storm is processed as follows:
 
 1. The [IDF-CC](https://www.idf-cc-uwo.ca/) design support tool was used to acquire current and projected Intensity-Duration-Frequency (IDF) curves. From this tool, the [CMIP6](https://esgf-node.llnl.gov/projects/cmip6/) ensemble, downscaled and biased corrected as per [PCIC](https://www.pacificclimate.org/data/statistically-downscaled-climate-scenarios), are packaged into future projected IDF curves.
-1. 3 climate change scenarios (RCP 2.4, 4.5 and 8.5) are considered.
+1. 3 climate change scenarios (SSP1-2.4, SSP2-4.5 and SSP5-8.5) are considered.
 1. IDFs produced for the time horizons 2015-2045 and 2045-2100 are compared with current IDF curves, i.e., 3 IDFs per scenario.
 1. The 100-year return precipitation events are created using the alternating block approach following the Natural Resources Canada document: *Case studies on climate change in floodplain mapping* (NRC, 2018).
 
@@ -784,10 +792,10 @@ df.results.CC %>%
   ggplot(aes(x=minute/60)) + 
   theme_bw() + theme(legend.position = c(.9,.9), legend.title = element_blank(), legend.justification = c(1,1)) +
   
-  geom_ribbon(aes(ymin=`CC-2015-8.5-2yr`,ymax=`CC-2015-8.5-100yr`,fill='RCP-8.5'),alpha=.5) +
+  geom_ribbon(aes(ymin=`CC-2015-8.5-2yr`,ymax=`CC-2015-8.5-100yr`,fill='SSP5-8.5'),alpha=.5) +
   
-  geom_ribbon(aes(ymin=`CC-2015-4.5-2yr`,ymax=`CC-2015-4.5-100yr`,fill='RCP-4.5'),alpha=.5) +
-  geom_ribbon(aes(ymin=`CC-2015-2.6-2yr`,ymax=`CC-2015-2.6-100yr`,fill='RCP-2.6'),alpha=.5) +
+  geom_ribbon(aes(ymin=`CC-2015-4.5-2yr`,ymax=`CC-2015-4.5-100yr`,fill='SSP2-4.5'),alpha=.5) +
+  geom_ribbon(aes(ymin=`CC-2015-2.6-2yr`,ymax=`CC-2015-2.6-100yr`,fill='SSP1-2.6'),alpha=.5) +
   
   geom_line(aes(y=`CC-2015-8.5-2yr`), linewidth=.5) +
   geom_line(aes(y=`CC-2015-2.6-2yr`), linewidth=.5) +
@@ -812,10 +820,10 @@ df.results.CC %>%
   ggplot(aes(x=minute/60)) + 
   theme_bw() + theme(legend.position = c(.9,.9), legend.title = element_blank(), legend.justification = c(1,1)) +
   
-  geom_ribbon(aes(ymin=`CC-2045-8.5-2yr`,ymax=`CC-2045-8.5-100yr`,fill='RCP-8.5'),alpha=.5) +
+  geom_ribbon(aes(ymin=`CC-2045-8.5-2yr`,ymax=`CC-2045-8.5-100yr`,fill='SSP5-8.5'),alpha=.5) +
   
-  geom_ribbon(aes(ymin=`CC-2045-4.5-2yr`,ymax=`CC-2045-4.5-100yr`,fill='RCP-4.5'),alpha=.5) +
-  geom_ribbon(aes(ymin=`CC-2045-2.6-2yr`,ymax=`CC-2045-2.6-100yr`,fill='RCP-2.6'),alpha=.5) +
+  geom_ribbon(aes(ymin=`CC-2045-4.5-2yr`,ymax=`CC-2045-4.5-100yr`,fill='SSP2-4.5'),alpha=.5) +
+  geom_ribbon(aes(ymin=`CC-2045-2.6-2yr`,ymax=`CC-2045-2.6-100yr`,fill='SSP1-2.6'),alpha=.5) +
   
   geom_line(aes(y=`CC-2045-8.5-2yr`), linewidth=.5) +
   geom_line(aes(y=`CC-2045-2.6-2yr`), linewidth=.5) +

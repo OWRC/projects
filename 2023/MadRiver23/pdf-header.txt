@@ -19,3 +19,14 @@ always_allow_html: true
   .table50 {width: 50%;}
   .table75 {width: 75%;}
 </style>
+
+---
+title: "Rainfall-Runoff Modelling of the Mad River"
+subtitle: "An event-based HEC-HMS model of the Upper Mad River watershed. Prepared for the NVCA"
+author: "Oak Ridges Moraine Groundwater Program"
+date: "`r gsub(' 0', ' ', format(Sys.time(), '%d %B, %Y'))`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+---
