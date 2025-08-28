@@ -55,6 +55,7 @@ shp/
 *.geojson
 *.csv
 *.xlsx
+*.docx
 *.xml
 *.asc
 *.bil
