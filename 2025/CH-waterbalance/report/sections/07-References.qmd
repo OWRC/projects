@@ -1,0 +1,29 @@
+<br>
+
+<br>
+
+# References
+
+Bergström, S., 1976. Development and application of a conceptual runoff model for Scandinavian catchments. SMHI RHO 7. Norrköping. 134 pp.
+
+Bergström, S., 1992. The HBV model - its structure and applications. SMHI RH No 4. Norrköping. 35 pp.
+
+Craig, J.R., G. Brown, R. Chlumsky, W. Jenkinson, G. Jost, K. Lee, J. Mai, M. Serrer, M. Shafii, N. Sgro, A. Snowdon, and B.A. Tolson, Flexible watershed simulation with the Raven hydrological modelling framework, Environmental Modelling and Software, 129, 104728, doi:10.1016/j.envsoft.2020.104728, July 2020
+
+EBNFLO Environmental and AquaResource Inc., 2010. Guide for Assessment of Hydrologic Effects of Climate Change in Ontario. 234pp.
+
+Gupta, H.V., H. Kling, 2011. On typical range, sensitivity, and normalization of Mean Squared Error and Nash–Sutcliffe Efficiency type metrics. Water Resources Research. 47 (10).
+
+Matott, L.S., 2017. OSTRICH: an Optimization Software Tool, Documentation and User's Guide, Version 17.12.19. 79 pages, University at Buffalo Center for Computational Research, http://www.civil.uwaterloo.ca/envmodelling/Ostrich.html.
+
+Nash, J.E. and J.V. Sutcliffe, 1970. River flow forecasting through conceptual models part I — A discussion of principles. Journal of Hydrology. 10(3): 282–290. 
+
+<!-- Martel, J., Demeester, K., Brissette, F., Poulin, A., Arsenault, R., 2017. HMETS - a simple and efficient hydrology model for teaching hydrological modelling, flow forecasting and climate change impacts to civil engineering students. International Journal of Engineering Education 34, 1307–1316. -->
+
+Ontario Geological Survey 2010. Surficial geology of southern Ontario; Ontario Geological Survey, Miscellaneous Release— Data 128 – Revised.
+
+Shrestha, D.L. and D.P. Solomatine, 2008. Data‐driven approaches for estimating uncertainty in rainfall‐runoff modelling, International Journal of River Basin Management, 6:2, 109-122.
+
+Strahler, A.N., 1952. Hypsometric (area-altitude) analysis of erosional topology, Geological Society of America Bulletin 63(11): 1117–1142.
+
+Tolson, B.A. and Shoemaker, C.A., 2007. Dynamically Dimensioned Search Algorithm for Computationally Efficient Watershed Model Calibration. Water Resour. Res. 43.

@@ -1,0 +1,12 @@
+.quarto-title-block .quarto-title-banner {
+    background-image: url(sections/fig/ORMGP_logo_no_text.png);
+    background-size: 250px;
+    background-position: left;
+    background-repeat: no-repeat;
+    padding-left: 10px;
+    background-origin: content-box;
+  }
+
+  figure.quarto-float div.leaflet-control {
+    text-align: left;
+  }  

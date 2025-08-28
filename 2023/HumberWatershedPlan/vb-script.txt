@@ -1,0 +1,8 @@
+
+        'Dim fp = "M:\TRCA\231113-TEGWFM18-Humber\TRCA_expansion_nwt-baseline\TEGWFM18-Humber-baseline.flx"
+        'Dim fp = "M:\TRCA\231113-TEGWFM18-Humber\TRCA_expansion_nwt-Sce1\TEGWFM18-Humber-Sce1.flx"
+        'Dim fp = "M:\TRCA\231113-TEGWFM18-Humber\TRCA_expansion_nwt-Sce2\TEGWFM18-Humber-Sce2.flx"
+        Dim fp = "M:\TRCA\231113-TEGWFM18-Humber\TRCA_expansion_nwt-Sce3\TEGWFM18-Humber-Sce3.flx"
+        Dim mfl As New Grid.Real(fp)
+        Dim drn = mfl.SumLayers(51, 70)
+        drn.SaveAs("E:\Sync\@owrc\projects\2023\HumberWatershedPlan\delivery\" & mmIO.GetFileName(fp) & "-discharge.bil")

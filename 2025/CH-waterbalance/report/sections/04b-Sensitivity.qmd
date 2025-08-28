@@ -1,0 +1,44 @@
+
+
+
+## Global Sensitivity Analysis
+
+During model calibration, 60,012 model runs were performed and provide the information for a sensitivity analysis. Of this, a subset 39,946 model runs were selected for analysis as they all scored a global-mean KGE greater than $0.75$ ($1.0$ is a perfect match, $0.65$ is an acceptable model, $0.0$ is a failed model). The remaining model runs are rejected on the basis that they do not perform well and should not be considered a viable parameter set.
+
+Model parameters that are adjusted by DDS are listed in section @sec-mdl-params.
+
+<br>
+
+### Sensitivity analysis
+
+All of the 38 parameters were sampled from a pre-defined range of likely values these parameters should take. As the DDS algorithm samples these parameters more-or-less randomly from within this range and keeps the parameter adjusted that yields a better model performance.
+
+Below are *box-and-whisker* plots showing the distribution of values parameters tended to take during the DDS sampling where the overall model performance remained acceptable. Furthermore, the values are weighted according to the model performance achieved at the given value to add greater bias to those that performed best.
+
+Parameters having a thinner box indicates that the parameter tended to converge to a unique value and thus the model is most sensitive to changes in these parameters. Whereas parameters having wider boxes indicates that there is less certainty in the parameters' true value. For the calibrated model, the parameter values of the best performing model was taken as the final value.
+
+To read the [box-and-whisker plots](https://en.wikipedia.org/wiki/Box_plot), the box contains the middle 50% of the weighted distribution, the thick line within the box of the sample median (i.e., best guess), the "whiskers" (i.e., horizontal lines) show the $1.5$ times the [Interquartile Range](https://en.wikipedia.org/wiki/Interquartile_range) (IQR), and the points are the outliers (points outside the $1.5\cdot\text{IQR}$).  As the plots in @fig-sens-raven and @fig-sens-tune show distribution from 44,267 samples, the outliers are few and far between.
+
+<br>
+
+::: {#fig-sens-raven}
+![](sections/fig/batchCollectAllRealizations.py.boxplot-Raven.png){width=800}
+
+Sensitivity of Raven parameters (as in Craig et.al., 2020). Note: parameters ending with "000" and "001" are specified above and below the escarpment, respectively.
+:::
+
+<br>
+
+::: {#fig-sens-tune}
+![](sections/fig/batchCollectAllRealizations.py.boxplot-Tuning.png){width=800}
+
+Sensitivity of distributed parameters. Note: parameters ending with "000" and "001" are specified above and below the escarpment, respectively. (See parameter descriptions in @sec-mdl-params.)
+:::
+
+<br>
+
+Overall, all of the parameters showed some degree of convergence, meaning that the boxes are always within the pre-specified sample ranges, as intended. In some circumstances, such as with `RAIN_ICEPT_FACT`, the value showed little convergence to any particular value, suggesting that the model has little sensitivity to this parameter.
+
+Parameters, such as `LAKE_PET_CORR`, showed the tendency to converge to one limit of the sample range, which may suggest that the pre-specified sample range is too constrained and an optimal values lies outside of the sample range. An exception to this would be the parameters that can only take a value from 0--1, such as the baseflow/interflow linear coefficients, where values outside this range would not make physical sense.
+
+In another particular case, parameters such as `TIME_LAG000` strongly converged toward zero, meaning that the model does not behave well when this parameter takes on a value. In future builds of the model, it would be safe to remove `TIME_LAG000` (and its parameter) from the model sensitivity exercise altogether.

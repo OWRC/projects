@@ -1,0 +1,254 @@
+
+
+# Hydrological Model Development
+
+
+The [Raven Hydrological Framework](https://raven.uwaterloo.ca/){target="_blank"} (Craig et al., 2020) has been selected to perform the water balance modelling for Conservation Halton. Advantages to Raven include:
+
+1. free and open source code
+1. developed and maintained at the University of Waterloo 
+1. widely used in Canada
+1. has ongoing support and training
+
+Raven is regarded as a "Hydrological Framework" rather than a traditional hydrological model. The key difference lies in that typical off-the-shelf models come with a predefined set of hydrological procedures designed to complete specific tasks assigned by the model designer. However, in practice, the tasks at hand often come with their own constraints, whether due to data limitations or the unique nature of the problem. Raven's framework, on the other hand, enables the modeller to organize and customize their own set of processes, effectively combining procedures from various off-the-shelf models as needed.
+
+In addition to its overall advantages, Raven was specifically chosen for its capability to manage reservoir operations.
+
+> For the sake model management at the ORMGP, the Conservation Halton Water Balance model of 2025 is abbreviated to "CHWBM25".
+
+
+## Special Considerations
+
+Modelling climate change presents its own challenges, particularly because the data from GCMs is provided as total precipitation rather than being separated into rainfall and snowfall. To enable the model to make future climate projections, *it must accept total precipitation as input* (as opposed to precipitation as rainfall and snowfall), allowing Raven to manage the partitioning of precipitation into rainfall and snowfall optimized during calibration.
+
+
+## Model Selection
+
+There are 5 Raven process components built into CHWBM25:
+
+- Degree-days Snowpack modelling
+- Soil moisture accounting after (HBV; @fig-hbv)
+- Triangular convolution basin runoff
+- Linear decay baseflow
+- Diffusive wave channel routing
+- Rule-curve induced reservoir operations
+
+
+The HBV model (Hydrologiska Byråns Vattenbalansavdelning model) is a conceptual rainfall-runoff model developed in Sweden for simulating river discharge using precipitation and temperature data (Bergström, 1976). It's widely used in Canada (e.g., [Green Kenue](https://nrc.canada.ca/en/research-development/products-services/software-applications/green-kenuetm-software-tool-hydrologic-modellers){target="_blank"}) for flood forecasting, water resource planning, and climate change impact studies (@fig-hbv).
+
+<br>
+
+::: {#fig-hbv}
+![](sections/fig/HBV-schem-Shrestha-Solomantine-2008 - modified.png){width=800}
+
+HBV representations of hydrological processes at surface (modified from Shrestha and Solomatine, 2008)
+:::
+
+<!-- - Snowpack modelling after HMETS (Martel et al., 2017)
+- Soil moisture accounting also after HMETS (@fig-hmets)
+- Gamma convolution runoff routing
+- Diffusive wave channel routing
+- Rule-curve induced reservoir operation
+
+The Hydrological Model of École de Technologie Supérieure (HMETS) is a straightforward, yet highly efficient conceptual hydrological model built for Canadian climates. It simulates all key hydrological processes, including snow accumulation and snowmelt. Is is simple in terms of its parameterization yet preserves common conceptual water stores used in hydrological models (@fig-hmets).
+
+::: {#fig-hmets}
+![](sections/fig/HMETSpaper-fig01.png){width=600}
+
+HMETS representations of hydrological processes at surface (Martel et al., 2017)
+::: -->
+
+<br>
+
+
+Precipitation, interception and snowmelt are first handled by Raven. The remaining liquid water (i.e., *net precipitation*) is first partitioned into impervious runoff, the remainder is used to fill the Tension store (__TS__)--this is deemed infiltration (__F__). Water that is not held in tension drains (__D__) toward the upper reservoir (__UZ__). (Note that in HBV, impervious runoff is also added to the __UZ__.)  Water in tension will deplete over time via evapotranspiration (__EA__).
+
+Water in the upper reservoir can move three ways, either:
+
+1. upward as capillary flux (__CF__), replenishing __TS__;
+1. laterally as *interflow* (i.e., fast runoff -- __Q~UZ~__); or
+1. percolate downward (__G__) into the lower reservoir (__LZ__)--this is deemed *groundwater recharge*.
+
+Lastly, water in the lower reservoir drains as *baseflow* (i.e., slow runoff -- __Q~LZ~__).  The combination of fast and slow runoff makes up total runoff (__Q__) which is then processed through a triangular convolution transfer function to simulate the delay of runoff generated on surface to the basin outlet (Bergström, 1992).
+
+
+
+## Model Inputs
+
+> All spatial data have been reprojected to [NAD83--Ontario MNR Lambert](https://epsg.io/3161){target="_blank"} (EPSG:3161)
+
+
+Data used to run the model (inputs) are divided into 3 categories:
+
+1. Structural (@sec-mdl-structural) lists the data that do not change in time (e.g., topography, sub-watershed areas, land use, etc.);
+2. Reservoir Operations (@sec-resops) handles the operating rules associated with reservoir management; and 
+3. Forcings (@sec-mdl-forcings) lists the variable data used to "force" the model to change states (e.g., precipitation, temperature, etc.).
+
+<br>
+
+### Structural {#sec-mdl-structural}
+
+Structural components of the model refer to the spatial information used in building the model. These data do not change during a model run, but may change should alternative models need comparing. A typical example of this would be to change land use patterns to reflect future conditions to be compared with current conditions.
+
+
+#### Sub-Basins
+
+Raven models require the model domain to be further divided up into sub-basins--these are essentially the same as a "sub-watershed", so no physical distinction should be made here. Rather, we'll use the term "sub-basin" to refer to the basins modelled in Raven, and "sub-watershed" to refer to the data received from CH. The CH sub-watershed layer was modified to:
+
+1. exclude boundaries that existed entirely within Lake Ontario (OBJECTIDs 54 and 55)
+1. exclude boundaries that covered the "*Beach Strip Areas*" heading toward the Burlington Skyway (OBJECTIDs 12 and 50)
+1. include the Reservoirs:
+    1. Mountsberg Reservoir: OBJECTID 25 was split into 2 sub-watersheds connected by the Reservoir
+    1. Scotch Block Reservoir: OBJECTID 27 was split into 2 sub-watersheds connected by the Reservoir
+    1. Hilton Falls and Kelso Reservoirs: OBJECTID 42 was split into 2 sub-watersheds upstream of each reservoir
+
+> Note: the sub-watershed boundaries were updated by CH staff in early 2025 to correct certain deficiencies.
+
+In all, the Conservation Halton study area is divided into 70 Raven "Sub-Basins" (@fig-map-subbasins). The sub-basins are topologically ordered, meaning the outlet if an upstream sub-basin is directed to the appropriate downstream sub-basin, if it is not Lake Ontario.
+
+Using the ORMGP CDS (@sec-ormgpcds), climate datasets are produced for every sub-basin.
+
+
+```{r}
+#| label: fig-map-subbasins
+#| fig-cap: 'Raven Sub-Basins for the CHWBM25. Sub-basins draining to Lake Ontario are assigned a "drains to" ID of -1. (Click on basin to see properties.)'
+#| fig-height: 6
+#| warning: false
+
+CH.subbasins <- read_sf('../delivery/GIS/CH_Subs_Raven2025.shp') %>% st_transform(4326)
+
+leaflet(CH.subbasins) %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addScaleBar(position = "bottomleft") %>%
+  addPolygons(
+    weight = 1,
+    color='black',
+    label = ~paste0(gsub("-"," ",Subwatersh),' (SWS ',SubId,')'),
+    popup = ~paste0('<b>',gsub("-"," ",Subwatersh),'</b>',
+                    '<br>Basin/SWS ID: ',SubId,
+                    '<br>Drains to ID: ',DowSubId,
+                    '<br>Area: ',round(BasArea/1000000,1),' km²'),
+    highlightOptions = highlightOptions(weight = 5, fillOpacity = 0.8),
+  )
+```
+
+
+
+> original dataset: `CH_Watersheds.shp` and `CH_Subwatersheds.shp` (received 2024-10-18); processed dataset: `CH_Subwatershed_select.shp`
+
+> revised dataset: `Catchment_Delineation_ArcHydro_20210315.gdb` (received 2025-03-07); processed dataset: `CH_Subs_Raven2025.shp`
+
+
+
+#### Topography
+
+The DEM (@sec-dem) was analysed to gather basin characteristics such as mean slope and direction, mainstem channel length, and order (after Strahler, 1952).
+
+
+#### Channel Geometry
+
+Using on areal imagery, the topological stream network was used to approximate channel and valley widths for every sub-basin (i.e., channel geometry); care was taken to only observe natural channels and geometry was only approximated from the largest ordered channel found within every sub-basin. Channel/valley widths was then used as a model input.
+
+Aerial imagery was employed to approximate channel and valley widths within each sub-basin, serving as a proxy for channel geometry. Only natural channels were considered, and measurements were derived exclusively from the highest-order channel present in each sub-basin.  Measurements were grouped according to their stream order. The resulting channel and valley width estimates were subsequently used as model inputs.
+
+In sub-basins having more than 25% urbanized cover, a trapezoidal channel is assumed and is given it's own roughness value.
+
+<!-- Table: Your Caption
+
+| stream order | channel width | valley width |
+| --- | --- | --- |
+| 7 | 17 | 85 |
+| 6 | 12 | | -->
+
+
+> original dataset: `CH_Waterflow.gdb` (received 2024-11-05); processed dataset: `CH_Waterflow-segments.shp`
+
+
+
+
+#### Land Use
+
+Land use data (@sec-landuse) was mapped to model parameters using @tbl-hru-landuse.
+
+
+#### Surficial Geology
+
+"Relative Permeability" attribute in the OGS data (@sec-surfgeo) was mapped to model parameters using @tbl-hru-surfgeo.
+
+
+
+#### Hydrologic Response Units
+
+The model is structured in a semi-distributed manner, where the study area is initially discretized and then divided into distinct Hydrologic Response Units (HRUs), each modelled independently. The HRU functions are subsequently mapped back to the spatial distribution within the study area.
+
+HRU-based modelling provides the benefit of efficient performance while maintaining the spatial distribution of hydrological processes. This approach also enables the incorporation of factors like land use change into the model.
+
+The model domain is organized into a 60x60 m raster grid. For each grid cell, a spatial overlay is applied, grouping cells based on combinations of land use, canopy type, surficial geology type, and sub-basin ID. @tbl-hru-landuse lists the conversion used from CH land use classifications to the surface and canopy types. @tbl-hru-surfgeo lists the 8 permeability classes that are mapped from the OGS surficial geology layer.
+
+In total, the CH study area is divided into 660 combinations (HRUs) based on 11 surface/canopy types $\times$ 8 permeability types $\times$ 70 sub-basins, derived from 270,498 raster grid cells.
+
+:::: {layout-ncol="2"}
+
+::: {#tbl-hru-landuse}
+| CH type | Surface type | Canopy type |
+|:---|:---|:---|
+| Forest | Forest | Deciduous |
+| Hedge Row | ShortVegetation | MixedVegetation |
+| Marsh | Wetland | ShortVegetation |
+| Swamp | Swamp | ShortVegetation |
+| Forested Swamp | Swamp | MixedVegetation |
+| Water | Waterbody | Bare |
+| Agriculture | Agriculture | ShortVegetation |
+| Undifferentiated | ShortVegetation | ShortVegetation |
+| Settlement and Developed Lands | Urban | Bare |
+| Transportation | Barren | Bare |
+| Extraction-Aggregate | noflow | Bare |
+
+CH land use re-classification table.
+:::
+
+::: {#tbl-hru-surfgeo}
+| Relative Permeability |
+|:---|
+| Low |       
+| Low-Medium |
+| Medium |
+| Medium-High |
+| High |
+| Unknown/variable |
+| Streambed/alluvium/floodplain |
+| Wetland sediments/organics |
+
+Surficial geology permeability classes.
+:::
+
+::::
+
+
+#### Urban Areas
+
+One limitation with the HBV model out-of-the-box is that it was not intended to model urban runoff. Fortunately, with the modular framework in Raven, special conditions are added to manage urban runoff.
+
+In HBV, all of impervious runoff, pervious runoff and gravity drainage are routed to the upper soil layer (__UZ__ in @fig-hbv). Essentially, this means that HBV does not differentiate impervious runoff, a relatively fast source of runoff, with *so-called* interflow (i.e., shallow groundwater flow), a slower/delayed source of runoff.
+
+For the CHWBM25, urban runoff is managed separately as define in the Raven instruction file (.rvi). Here, urban sub-surface runoff is conceptualized as a network of leaky storm sewers. Leakiness is handled by setting a linear decay of 5% per day, which is recharged into the HBV lower soil zone (__LZ__ in @fig-hbv). The rest of the water in __UZ__ is delivered to the basin stream network.
+
+
+### Reservoir Operations {#sec-resops}
+
+Raven uses linear optimizers in attempts to keep reservoir stages as close to observed limits and to operational needs. Three constraints are applied (descriptions of these constraints can be found in Craig et.al., 2020):
+
+1. `ReservoirMaxStage` -- set to 95^th^ percentile monthly stage (@fig-resstage)
+1. `ReservoirMinStage` -- set to 5^th^ percentile monthly stage (@fig-resstage)
+1. `ReservoirTargetStage` -- set to rule curves (@fig-rulecurves)
+
+
+### Forcings {#sec-mdl-forcings}
+
+Climate data used to "force" the model by changing the states of water storage and generate runoff are derived from the ORMGP's Climate Data Service (CDS). The rational being that the CDS is automatically updated nightly; therefore the Raven model input files can be updated anytime by CH staff. (Scripts are included with this report to access the ORMGP-CDS API and regenerated climate input files--described in @sec-ormgp-cds-script.)
+
+The CDS includes data from many agencies (@sec-ormgpcds) but at the moment does not include data offered by CH via their DataCurrent portal (@sec-ch-datacurrent). The reason being is that open access to the DataCurrent API has yet to be established as done with the rest of ORMGP's partner agencies. 
+
+As per the scope of the project, the Raven model had to be developed with the intention of applying future climate projections to asses impact under a changing climate. This imposes a constraint on the model design in that precipitation must be inputted in total, rather than in their particular type (i.e., rainfall and snowfall). The Raven model has the functionality to parse precipitation into these types and is determined through calibration.
+
+<br>

@@ -1,0 +1,32 @@
+## Groundwater Modelling {#sec-gwmdl}
+
+The South Halton [MODFLOW](https://www.usgs.gov/software/modflow-2005-usgs-three-dimensional-finite-difference-ground-water-model){target="_blank"} model (version 310) archived in the [ORMGP Numerical Model Custodianship Program](https://owrc.github.io/snapshots/md/numerical-model-custodianship-program.html){target="_blank"} is used to estimate steady-state groundwater discharge to streams under simulated long-term average recharge.
+
+For any scenario applied to the Raven model, impacts to the current recharge regime can be further analysed to investigate impacts to groundwater discharge to streams.
+
+Scripts offered with this report allow the conversion of recharge outputs from Raven into the recharge input file to the South Halton model. 
+
+### South Halton Model Upgrade
+
+The original South Halton (SH) model used for this project was delivered in a discontinued version of MODFLOW ([MODFLOW-96](https://water.usgs.gov/nrp/gwsoftware/modflow/modflow-96h.htm){target="_blank"}). The model (as delivered) is also highly unstable in that for any change to the recharge input, the model would not converge and thus remains useless outside of its delivered state.
+
+To circumvent these issues, the model has been converted into [MODFLOW-NWT](https://www.usgs.gov/software/modflow-nwt-a-newton-formulation-modflow-2005){target="_blank"} which is a supported version of MODFLOW and is known for its unprecedented stability. Conversion entails replicating all parameters from the original to the new--from an model inputs, these models are identical. Only, what makes the model *code* different (96 vs. NWT) is the means by which the model achieves its solution. The MODFLOW-96 model was set to terminate its attempt to solve the groundwater system of equations after 10 iterations--any modification to this (parameter [MXITER](https://water.usgs.gov/nrp/gwsoftware/modflow2000/MFDOC/pcg.html){target="_blank"} in the .PCG file) and the model fails to converge.  In contrast, the MODFLOW-NWT converges after 340 iterations. 
+
+Changes to model conversion also changes the model's solution. @fig-modflow-flux shows how the model differs in terms of the volume of water discharge from the groundwater system to the surface water features, i.e., *groundwater discharge to streams*. The blue squares are the values simulated by the (original) MODFLOW-96 model, while the green squares are the MODFLOW-NWT results, *given the same groundwater recharge boundary condition*. Notice that there are slight changes to these results between models, but not enough to reject the updated model code.
+
+Ultimately, both models are performing well against baseflow estimated using [14 automatic hydrograph separation techniques](https://owrc.github.io/info/hydrographseparation/){target="_blank"} whose range in estimated long-term varies widely--close to 200 mm/yr--shown as the grey bars in @fig-modflow-flux.  (Black dots indicate the median of the techniques.) Most importantly is that in all but one case (02HB032: MOUNTSBERG CK BELOW MOUNTSBERG RESERVOIR) the modelled groundwater discharge to streams lie within the range of baseflow estimates. 
+
+The mismatch at 02HB032 should be forgiven as baseflow is typically overestimated by automatic hydrograph separation techniques where streamflow regulation (e.g., reservoir dams) dominates local hydrology. (To a lesser degree, the same can be said to 02HB022: BRONTE CK AT CARLISLE, which is the next gauge immediately downstream of 02HB032.)
+
+
+::: {#fig-modflow-flux}
+![](sections/fig/MODFLOW-flux-compare.png){width=800}
+
+Comparison of estimated and simulated long-term groundwater discharge to streams (mm/yr). Black lines indicate the range of baseflow estimates--black dot is the estimate median. Blue squares are the values simulated by the (original) MODFLOW-96 model and green squares are the MODFLOW-NWT results, *given the same groundwater recharge boundary condition*.
+::: 
+
+<br>
+
+> Please note that the converted model used here should <u>only</u> be applied to observing groundwater discharge to streams under a changing recharge regimes.  Any other application of the model deserves more scrutiny on the model parameterization, which was left unchanged here.
+
+<br>

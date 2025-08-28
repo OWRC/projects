@@ -1,0 +1,56 @@
+---
+title: Water-balance Modelling
+subtitle: prepared for Conservation Halton
+author: Mason Marchildon
+date: last-modified
+date-format: long
+description: "prepared by the Oak Ridges Moraine Groundwater Program"
+title-block-banner: "#27445C"
+format: 
+    docx:
+        page-layout: full
+        embed-resources: true
+        smooth-scroll: true
+        number-sections: true
+        theme: default
+        mainfont: Arial
+        toc: true
+        toc-location: left
+        toc-title: Contents
+        toc-depth: 4
+execute: 
+  echo: false
+  warning: false
+css: styles.css
+editor: visual
+---
+
+{{< include sections/01-Intro.qmd >}}
+
+<br>
+
+{{< include sections/02-StudyArea.qmd >}}
+
+<br>
+
+{{< include sections/03-ModelDevelopment.qmd >}}
+
+<br>
+
+{{< include sections/03m-GroundwaterModelling.qmd >}}
+
+<br>
+
+{{< include sections/04-Calibration.qmd >}}
+
+<br>
+
+{{< include sections/05-Results.qmd >}}
+
+<br>
+
+{{< include sections/06-Delivery.qmd >}}
+
+<br>
+
+{{< include sections/07-References.qmd >}}

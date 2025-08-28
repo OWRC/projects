@@ -1,0 +1,93 @@
+
+### Digital Elevation Model {#sec-dem}
+
+Ground surface elevations were collected from the Ontario Ministry of Natural Resources and Forestry [Provincial Digital Elevation Model](https://geohub.lio.gov.on.ca/maps/mnrf::provincial-digital-elevation-model-pdem/about) (PDEM) at the CGVD2013 vertical datum, last updated 26 September 2023.
+
+Elevation data were down-scaled by taking the average of known elevations occurring within every 60x60m² cell. Down-scaling was then followed by a hydrological correction [described here](https://owrc.github.io/interpolants/interpolation/overland.html) in order to obtain land surface slopes and slope-aspects.
+
+
+### Sub-Watersheds
+
+
+Conservation Halton watershed and sub-watershed boundaries were obtained November 5th, 2024 from the CH open data portal (https://conservationhalton-camaps.opendata.arcgis.com/search?q=subwatershed&tags=boundaries); the latest reported date of layer updates were 2022-12-6 and 2022-12-16, respectively. The watershed and sub-watershed files downloaded are `CH_Watersheds.shp` and `CH_Subwatersheds.shp`, respectively.
+
+The boundaries were later revised to an updated version of CH sub-watershed delineation: `Catchment_Delineation_ArcHydro_20210315.gdb`, received March, 2025.
+
+
+
+### Watercourses  
+
+Watercourse data provided by CH (`CH_Waterflow.gdb`) was processed using a [topological ordering algorithm developed by the ORMGP](https://owrc.github.io/interpolants/interpolation/watercourses.html){target="_blank"}. The algorithm takes stream/watercourse/drainage channels (represented as line features) and automatically determines connectivity and order thereby converting a set of line features into a topological stream network. 
+
+A topological stream network had the added advantage of:
+
+1. Determining both upstream and downstream reached from any identified reach;
+1. Determine flow direction;
+1. Determine stream order, such as the Strahler (1952) classification scheme; and
+1. Provide spatial statistics needed to inform the Raven model (e.g., sub-basin mainstem length, largest ordered channel leaving the sub-basin, etc.).
+
+> The processed stream network is included here: `./GIS/CH_Waterflow-segments.shp`.
+
+
+### Land Use {#sec-landuse}
+
+Current land use data were prepared by CH. Land use is factored into 11 categories (@fig-chlanduse):
+
+
+:::: {layout-ncol="2"}
+
+::: {}
+1. Forest
+1. Hedge Row
+1. Marsh
+1. Swamp
+1. Forested Swamp
+1. Water
+:::
+
+::: {}
+7. Agriculture
+8. Undifferentiated
+9. Settlement and Developed Lands
+10. Transportation
+11. Extraction-Aggregate
+:::
+
+::::
+
+<!-- ::: {}
+1. Agriculture
+1. Extraction-Aggregate
+1. Forest
+1. Marsh
+1. Other Treed Lands
+1. Settlement and Developed Lands
+:::
+
+::: {}
+7. Swamp
+8. Forested Swamp
+9. Transportation
+10. Undifferentiated
+11. Water
+::: -->
+
+::: {#fig-chlanduse}
+![](sections/fig/CH_Landuse.png)
+
+Current land use distribution as provided by CH.
+:::
+
+
+### Surficial Geology {#sec-surfgeo}
+
+The Ontario Geological Survey's 2010 Surficial geology of southern Ontario (OGS, 2010) layer describes the material properties of near-surface soils. Within the OGS (2010) layer exists a field that describes the relative permeability of the material is used to inform the model on potential recharge rates. Additional details on this layer including a description of material types can be found [here](https://owrc.github.io/interpolants/interpolation/surfgeo.html).
+
+
+::: {#fig-surfgeo}
+![](sections/fig/CH_Surfgeo.png)
+
+OGS (2010) surficial geology distribution.
+:::
+
+<br>

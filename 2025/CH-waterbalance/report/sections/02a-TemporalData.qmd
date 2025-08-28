@@ -1,0 +1,268 @@
+
+### DataCurrent {#sec-ch-datacurrent}
+
+Access to Conservation Halton's [DataCurrent web portal](https://smartcitywater.ca/datacurrent/) was granted. From there, a variety of time-series data was collected within and adjacent to CH's boundary, including:
+
+1. Precipitation and air temperature data from 42 stations 
+2. Climate data from 3 weather stations
+3. Snow depth and snow water equivalent data from 6 snow stations
+4. Water level, estimated discharge and storage volume, air temperature, water temperature and miscellaneous climate data (where available) from 4 CH reservoirs
+5. Water level, water temperature and preliminary discharge data (where available) from 13 stream gauging stations within CH jurisdiction (Not including Water Survey of Canada gauges)
+
+> These data are collected by 4 agencies: Halton Region, City of Hamilton, City of Oakville and Conservation Halton. 
+
+
+#### Precipitation
+
+Precipitation stations show good coverage over the study area, having sub-daily data recorded from 1996. Many stations also keep record of air temperature, while some also record air pressure.
+
+::: {#fig-datacur-precip}
+![](sections/fig/datacurrent/precip-Precipitation_mm.png){width=800}
+
+Dates recording precipitation stations made available through DataCurrent.
+:::
+
+#### Climate station data
+
+Climate data from 3 stations have been collected weather data since 2009. Data collected include: 
+
+- Precipitation
+- Snow Depth (one station only)
+- Air Temperature
+- Barometric Pressure
+- Relative Humidity
+- Wind Speed
+- Wind Direction
+- Solar Radiation (one station only)
+- Wet Bulb Temperature
+
+
+::: {#fig-datacur-clim-precip}
+![](sections/fig/datacurrent/weather-AllParameters.png){width=800}
+
+Dates recording climate data made available through DataCurrent.
+:::
+
+
+#### Snow depth
+
+Snow course data have been collected at 6 locations since 1973 and provide snow depth and snow water equivalents (SWE) measurements roughly every 2 weeks.
+
+::: {#fig-datacur-snodepth}
+![](sections/fig/datacurrent/Snow Water Equivalent_mm.png){width=800}
+
+Dates recording snow water equivalent measurements made available through DataCurrent.
+:::
+
+Daily snow depths are also recorded at the CH Administration Office beginning in 2019; however, as with snow courses, no snowfall data are reported.
+
+
+#### Reservoir Stages
+
+Stage data from four Reservoirs operated by CH is included in DataCurrent from the years 2016--2023:
+
+<!-- 1. Scotch Block
+1. Hilton Falls
+1. Kelso Dam
+1. Mountsberg -->
+
+
+
+
+::: {#fig-resstage}
+
+::: {.panel-tabset}
+
+## Hilton Falls
+
+![](sections/fig/Monitoring Network_Real Time Monitoring_Hilton Falls Dam_Download_12_4_2024 4_19_58 PM.png){width=800}
+
+## Kelso Reservoir
+
+![](sections/fig/Monitoring Network_Real Time Monitoring_Kelso Dam_Download_12_4_2024 4_21_34 PM.png){width=800}
+
+## Mountsberg Dam
+
+![](sections/fig/Monitoring Network_Real Time Monitoring_Mountsberg Dam_Download_12_4_2024 4_22_28 PM.png){width=800}
+
+## Scotch Block Dam
+
+![](sections/fig/Monitoring Network_Real Time Monitoring_Scotch Block Dam_Download_12_4_2024 4_23_54 PM.png){width=800}
+
+:::
+
+Observed reservoir stages at CH reservoirs. Grey lines show monthly expected range (90$^\text{th}$ percentile).
+:::
+
+
+
+For each of these reservoirs, rule-curves have been provided by CH staff (@fig-rulecurves):
+
+::: {#fig-rulecurves layout-ncol=2}
+
+![](sections/fig/2024_12_04_CH Reservoir Rule Curves.pdf-page1.PNG)
+
+![](sections/fig/2024_12_04_CH Reservoir Rule Curves.pdf-page2.PNG)
+
+![](sections/fig/2024_12_04_CH Reservoir Rule Curves.pdf-page3.PNG)
+
+![](sections/fig/2024_12_04_CH Reservoir Rule Curves.pdf-page4.PNG)
+
+Conservation Halton rule-curves for managing four main reservoirs.
+:::
+
+
+### Environment Canada
+
+#### Climate data
+
+There is only one Environment Canada and Climate Change (ECCC) climate station located within the study area: [Georgetown WWTP (6152695)](https://climate.weather.gc.ca/climate_data/daily_data_e.html?StationID=4923){target="_blank"}. Unlike the DataCurrent stations, this station discriminates between rainfall and snowfall as opposed to solely reporting precipitation data. Location is shown in @fig-map-sws.
+
+Georgetown WWTP is an active station [recording data](https://owrc.shinyapps.io/sHyMet/?sID=148831){target="_blank"} since August, 1962. The station measures rainfall, snowfall, temperature (min/max/mean) and the depth of snowpack and reports on a daily basis. Having rainfall and snowfall reported independently allows for the analysis of temperature ranges that dictate the phase of precipitation (@fig-Tcrit-distrib). Having snowfall and depth of snowpack allows for the analysis of snowmelt dynamics.  
+
+
+```{r}
+#| label: fig-Tcrit-distrib
+#| fig-cap: "Distribution of precipitation types (rain-only, snow-only, rain-snow mix) relative to mean daily temperature."
+#| warning: false
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+df <- read.csv('../dat/climate/6152695.csv') %>%
+  subset(select=-c(depth_of_surface_snow,mean_air_temperature,precipitation_amount)) %>%
+  drop_na() %>%
+  mutate(Tavg=(max_air_temperature+min_air_temperature)/2, precip=rainfall_amount+snowfall_amount) %>%
+  filter(precip>0) %>%
+  mutate(alpha=snowfall_amount/precip,stat=ifelse(alpha==1,'all rain', ifelse(alpha==0, 'all snow', 'mixed')))
+
+ggplot(df) +
+  theme_bw() + theme(legend.position = "inside", legend.position.inside = c(.1,.8), legend.title = element_blank()) +
+  geom_density(aes(x=Tavg,y=after_stat(density * n/nrow(df)), fill=factor(stat)), alpha = 0.1, bw=1) +
+  labs(title='Distribution of precipitation type',subtitle='GEORGETOWN WWTP (6152695)',x='Air Temperature',y='density')
+```
+
+
+#### Streamflow gauges
+
+Eight Water Survey of Canada (WSC) gauges maintain long-term daily mean streamflow data. All stations have great periods of record (>20 years) and all but 1 are up to date and are shown in @fig-map-sws. (Note: Oakville Creek is the same as Sixteen Mile Creek.)
+
+The combined contributing area of these eight streamflow gauges covers roughly 630 km², or 2/3 of the study area. This is excellent coverage and would provide for good model calibration.
+
+::: {#tbl-gauge}
+| Gauge | Latitude | Longitude | Elevation (masl) | Drainage Area (km²) | Period of Record |
+|:---------|---:|---:|---:|---:|---:|
+| 02HB004: EAST OAKVILLE CK NEAR OMAGH | 43.5 | -79.8 | 164.9 | 193 | 1956--2024 |
+| 02HB005: OAKVILLE CK AT MILTON | 43.5 | -79.9 | 190 | 101.3 | 1957--2024 |
+| 02HB011: BRONTE CK NEAR ZIMMERMAN | 43.4 | -79.9 | 158.5 | 242 | 1963--2024 |
+| 02HB012: GRINDSTONE CK NEAR ALDERSHOT | 43.3 | -79.9 | 79.2 | 82.6 | 1965--2023 |
+| 02HB022: BRONTE CK AT CARLISLE | 43.4 | -80 | 255.1 | 123.4 | 1989--2024 |
+| 02HB027: FOURTEEN MILE CK AT OAKVILLE | 43.4 | -79.7 | 88.1 | 24.5 | 2002--2024 |
+| 02HB028: GRINDSTONE CK NEAR MILLGROVE | 43.3 | -79.9 | 248.4 | 36.8 | 2006--2017 |
+| 02HB032: MOUNTSBERG CK BELOW MOUNTSBERG RESERVOIR | 43.5 | -80 | 298.6 | 35.6 | 2006--2024 |
+| 02HB033: MOUNTSBERG CK NEAR CARLISLE | 43.4 | -80 | 265 | 52.8 | 2016--2024 |
+
+List of streamflow gauges within the CH jurisdiction.
+:::
+
+
+
+### Climate Data Service {#sec-ormgpcds}
+
+The ORMGP maintains a [Near-realtime Climate Data Service](https://owrc.github.io/interpolants/sources/climate-data-service.html){target="_blank"} (CDS). The CDS is updated nightly and provides 6-hourly and daily infilled and spatially interpolated climate data covering all of CH and going back to 1901. Data provided include: 
+
+- Rainfall
+- Snowfall
+- Snowmelt
+- Air Temperature
+- Air Pressure
+- Relative Humidity
+- Wind Speed
+- Wind Direction
+- Potential Evaporation
+
+
+### Ontario Climate Data Portal {#sec-temporal-ocdp}
+
+The [Ontario Climate Data Portal](https://lamps.math.yorku.ca/OntarioClimate/index_v18.htm){target="_blank"} (OCDP) is a provincially-funded future projection climate dataset covering Ontario on a grid with 10x14 km² cells. The data were compiled from the [Coupled Model Intercomparison Project Phase 5](https://climate-scenarios.canada.ca/?page=cmip5-intro){target="_blank"} (CMIP5). Daily ensemble climate projections from 32 Global Circulation Models (GCMs -- @tbl-ocdp-models) were downscaled by the Pacific Climate Impacts Consortium ([PCIC](https://www.uvic.ca/pcic/data-analysis-tools/data-portal/statistically-downscaled-scenarios/index.php)) and hosted by the LAboratory of Mathematical Parallel Systems (LAMPS) of Department of Mathematics and Statistics, York University. The data are free to download and are delivered in a form amenable to hydrologic modelling (i.e., daily precipitation and min/max air temperatures).  Future data can be collected up to the year 2100 in a number of [Representative Concentration Pathway](https://en.wikipedia.org/wiki/Representative_Concentration_Pathway){target="_blank"} (RCP) scenarios.
+
+Following the Province's guide for Assessing hydrologic impacts due to climate change (EBNFLO Environmental and AquaResource Inc., 2010), a set of 29 GCMs (3 models did not report temperatures) are plotted according to their projected change in precipitation and temperature among 2 time periods: one typically being a baseline/current condition vs. some future condition. The guide then suggests to pick out the models amongst this scatter: 
+
+1. The scatter plot method -- where the 4 most-extreme models that "bound the uncertainty" of the set of available models; and
+1. The percentile method -- where up to 10 models are selected that represent the 10^th^, 25^th^, 50^th^, 75^th^, and 90^th^ percentile of both change in precipitation and temperature.
+
+These methods are presented in @fig-ocdp-model-scatter. The idea, then, is to take the set of models from either method and input them into a hydrologic model. The set of hydrologic model outputs represents the uncertainty of the GCM collection as a whole. Added to this plot, is the model that has the most central tendency (i.e., the median simulation)---this is the single future projection used later in this study.
+
+<br>
+
+```{r}
+#| label: fig-ocdp-model-grids
+#| fig-cap: 'Layout of OCDP grids (in red), labelled by grid ID and superimposed above the study sub-watersheds.'
+#| warning: false
+
+sws <- read_sf('../delivery/GIS/CH_Subs_Raven2025.shp')
+ocdp <- read_sf('../delivery/GIS/OCDP/polygon9864-CH.shp')
+
+ggplot(ocdp) +
+  geom_sf(data=sws) +
+  geom_sf(fill=NA,colour='darkred',linewidth=1) +
+  geom_sf_label(aes(label = id)) +
+  labs(x=NULL,y=NULL)
+```
+
+<br>
+
+::: {#fig-ocdp-model-scatter}
+![](sections/fig/OCDP-model-scatter.png){width=700}
+
+Scatter plot of GCM projections (see @tbl-ocdp-models) for the study area showing changes from 1991-2021 to 2041-2071. Circled values show the subset of models selected using the percentile method, diamonds: the scatter plot method, and square: the median simulation (applied in @sec-results-future-climate).
+:::
+
+<br>
+
+::: {#tbl-ocdp-models layout-ncol=2}
+| ID | Model | Precipitation | Temperature |
+|:---|:---|---|---|
+| 1 | ACCESS1-0^1,2^ | x | x |
+| 2 | ACCESS1-3 | x | x |
+| 3 | BNU-ESM | x | x |
+| 4 | CCSM4 | x | x |
+| 5 | CESM1-BGC^2^ | x | x |
+| 6 | CMCC-CESM | x | x |
+| 7 | CMCC-CM | x | x |
+| 8 | CMCC-CMS | x | x |
+| 9 | CNRM-CM5 | x | x |
+| 10 | CSIRO-Mk3-6-0^3^ | x | x |
+| 11 | CanESM2 | x | x |
+| 12 | EC-EARTH^1^ | x | x |
+| 13 | FGOALS-g2 | x |  |
+| 14 | GFDL-CM3^1,2^ | x | x |
+| 15 | GFDL-ESM2G^1,2^ | x | x |
+| 16 | GFDL-ESM2M | x | x |
+
+: 
+
+| ID | Model | Precipitation | Temperature |
+|:---|:---|---|---|
+| 17 | HadGEM2-CC | x |  |
+| 18 | HadGEM2-ES | x |  |
+| 19 | IPSL-CM5A-LR | x | x |
+| 20 | IPSL-CM5A-MR | x | x |
+| 21 | IPSL-CM5B-LR^2^ | x | x |
+| 22 | MIROC-ESM | x | x |
+| 23 | MIROC-ESM-CHEM | x | x |
+| 24 | MIROC5^2^ | x | x |
+| 25 | MPI-ESM-LR^2^ | x | x |
+| 26 | MPI-ESM-MR^2^ | x | x |
+| 27 | MRI-CGCM3 | x | x |
+| 28 | MRI-ESM1^2^ | x | x |
+| 29 | NorESM1-M^2^ | x | x |
+| 30 | bcc-csm1-1 | x | x |
+| 31 | bcc-csm1-1-m | x | x |
+| 32 | inmcm4 | x | x |
+
+: 
+
+LAMPS models with daily precipitation and min/max temperature. ^1^: models meeting the "scatter plot method" criteria; ^2^: models meeting the "percentile method"; and ^3^: the "median" model (applied in @sec-results-future-climate).
+:::

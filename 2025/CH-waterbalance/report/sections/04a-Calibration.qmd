@@ -1,0 +1,222 @@
+
+## Optimization
+
+__Summary__ 
+
+- 38 Raven model parameters adjusted
+- DDS optimization algorithm applied (Tolson and Shoemaker, 2007)
+- global (i.e., simultaneous and equally-weighted) calibration to 9 stream flow gauges
+- optimized to the Kling-Gupta efficiency (KGE) factor (Gupta and Kling, 2011)
+- calibrated from 2009-10-01 to 2024-09-30; validated from 1993-10-01 to 2009-09-30
+- 65,000 simulations were run in 12 batches, yielding 12 possible models--the best performing of these 12 top performers was selected as final.
+
+<br>
+
+Calibration was automated using using the Dynamically Dimensioned Search (DDS--Tolson and Shoemaker, 2007) algorithm applied using the Ostrich [Optimization Software Toolkit](http://www.civil.uwaterloo.ca/envmodelling/Ostrich.html) (Matott, 2017).
+
+The DDS requires a pre-defined number of model runs and the algorithm attempts to improve the model's calibration each subsequent run. In total, 60,012 model runs were performed in 12 batches (each giving DDS 5001 model improvement attempts), and thus providing 12 optimized models. Calibration was restricted to the last 15 years (2009--2024), leaving the first 15 years for validation.
+
+The best-performing of these 12 batches was then selected as the final model. "Best-performing" was determined by the model has the highest total KGE over the calibration period for all 9 gauges, weighted equally.
+
+<br>
+
+### Parameter Sampling {#sec-mdl-params}
+
+The (20) Raven parameters sampled are grouped into four categories, each having a distinct role in the model simulation process. Descriptions of these parameters can be found in Craig et.al. (2020).
+
+**Climate parameters**
+
+- `RAINSNOW_TEMP`
+- `RAINSNOW_DELTA`
+- `SNOW_SWI`
+- `MELT_FACTOR`
+- `REFREEZE_FACTOR`
+- `LAKE_PET_CORR`
+- `PET_CORRECTION`
+
+**Interception parameters**
+
+- `RAIN_ICEPT_FACT`
+- `SNOW_ICEPT_FACT`
+- `MAX_CAPACITY`
+- `MAX_SNOW_CAPACITY`
+
+**Land Use and soil zone parameters**
+
+- `HBV_BETA`
+- `FIELD_CAPACITY`
+- `STORAGE_THRESHOLD`
+- `BASEFLOW_N` *(for urban HRUs only)*
+- `MAX_CAP_RISE_RATE`
+
+**Overland Flow routing parameters**
+
+- `TIME_CONC`
+- `TIME_LAG`
+
+> Note: these routing parameters were optimized independently above and below the Niagara escarpment; therefore 4 parameters were calibrated in total:  `TIME_CONC000` and `TIME_LAG000` are set above the escarpment, whereas `TIME_CONC001` and `TIME_LAG001` are set below.
+
+<br>
+
+An additional (18) parameters were assigned based on soil zone and land use mapping and do not have a specific Raven parameter associated with them. These parameters tend to be HRU-specific (i.e., distributed in space), while the Raven parameters listed above are more sub-basin-specific/global.
+
+**Soil zone parameters** (refer to @fig-hbv)
+
+- `Top` -- Tension storage capacity of topsoil (applied uniformly globally) [m]
+
+> Note: HBV's structure consists of 3 conceptual soil stores: Topsoil (__TS__), upper/fast zone (__UZ__) and the lower/slow zone (__LZ__ -- @fig-hbv). While topsoil is assigned a capacity, the upper and lower zones are semi-infinite reservoirs where capacity plays now role.
+
+**Interflow parameters**
+
+"Interflow" parameters affect the fast release of water to runoff, including both impervious and pervious runoff, and shallow groundwater flow.
+
+- `kLow` -- linear coefficient for discharge contributing from *Low* conductivity geology types [1/day]
+- `kLMedium` -- linear coefficient for discharge contributing from *Low-Medium* conductivity geology types [1/day]
+- `kMedium` -- linear coefficient for discharge contributing from *Medium* conductivity geology types [1/day]
+- `kMHigh` -- linear coefficient for discharge contributing from *Medium-High* conductivity geology types [1/day]
+- `kStreambed` -- linear coefficient for discharge contributing from alluvial sediments [1/day]
+- `kWetlandSediments` -- linear coefficient for discharge contributing from organic sediments [1/day]
+- `kUnknown` -- linear coefficient for discharge contributing from all other surficial geology types [1/day]
+
+**Baseflow parameters**
+
+Baseflow parameters affect the slow release of groundwater from deeper aquifers.
+
+- `bf000` -- baseflow coefficient for sub-watersheds above the escarpment [1/day]
+- `bf001` -- baseflow coefficient for sub-watersheds below the escarpment [1/day]
+
+**Surface Roughness parameters**
+
+- `Nurban` -- Manning's $n$ roughness factor for urban land types [--]
+- `Nnatural` -- Manning's $n$ roughness factor for natural land types [--]
+- `Nflood` -- Manning's $n$ roughness factor for natural floodplains [--]
+
+**Reservoir Outflow parameters**
+
+- `CWscotchblock` -- weir crest width at the Scotch block reservoir [m]
+- `CWmountsberg` -- weir crest width at the Mountsberg reservoir [m]
+- `CWkelso` -- weir crest width at the Kelso reservoir [m]
+- `CWhiltonfalls` -- weir crest width at the Hilton falls reservoir [m]
+
+> Note: calibrated crest widths should not be taken literally; they are *effective* widths given a weir coefficient of $0.6$. Technically, the actual reservoir dam dimensions can be entered into the Raven model; however, this information was not provided by CH.
+
+**Special parameters**
+
+- `AgImprv` -- used to control drainage practices on agricultural lands [--]
+
+
+<br>
+
+
+
+## Calibration statistics
+
+The model is calibrated simultaneously to 9 surface water stations, weighted equally. This is done such that the most suitable parameter set is determined for the entirety of the CH jurisdiction, thus lending confidence to the model's performance in ungauged areas.
+
+Model performance is equated to the Kling-Gupta efficiency factor ([KGE](https://en.wikipedia.org/wiki/Kling%E2%80%93Gupta_efficiency)--Gupta and Kling, 2011).  The best performing (i.e., optimized) model is the set of parameters that yielded the highest combined KGE applied to 9 surface water stations (@tbl-gauge) from October 2009 to 2024. (Model validation was performed from October 1993 to 2009.) 
+
+Also listed in @tbl-calib is the Nash-Sutcliffe efficiency factor ([NSE](https://en.wikipedia.org/wiki/Nash%E2%80%93Sutcliffe_model_efficiency_coefficient)--Nash and Sutcliffe, 1970) and the percent bias defined as:
+
+$$
+    \text{Bias} = \frac{\sum\left(Q_\text{sim}-Q_\text{obs}\right)}{\sum Q_\text{obs}} \times 100\%.
+$$
+
+Where $Q_\text{sim}$ is simulated discharge and $Q_\text{obs}$ is observed. Having a positive bias means that the model is over-predicting runoff volumes by the given percentage of observed. Both KGE and NSE aim to reach their highest value of $1.0$, meaning a perfect match; having values greater than $0.5$ is considered acceptable.
+
+<br>
+
+::: {#tbl-calib layout-ncol=2}
+| Gauge | KGE | NSE | Bias |
+|------|------|------|------|
+| 02HB004 | 0.80 | 0.62 |   7% |
+| 02HB005 | 0.83 | 0.67 |  -2% |
+| 02HB011 | 0.86 | 0.73 |  -5% |
+| 02HB012 | 0.85 | 0.76 |   7% |
+| 02HB022 | 0.90 | 0.81 |  -4% |
+| 02HB027 | 0.80 | 0.64 |  -7% |
+| 02HB028 | 0.73 | 0.70 |  23% |
+| 02HB032 | 0.61 | 0.29 | -14% |
+| 02HB033 | 0.79 | 0.67 | -10% |
+
+: Calibration 2009--2024 {#tbl-calib-calib}
+
+| KGE | NSE | Bias |
+|------|------|------|
+| 0.72 | 0.50 |  13% |
+| 0.81 | 0.63 |  -5% |
+| 0.86 | 0.76 |  -8% |
+| 0.82 | 0.65 |   5% |
+| 0.86 | 0.73 |  -3% |
+| 0.77 | 0.61 |  -7% |
+| 0.80 | 0.68 |  13% |
+| 0.59 | 0.27 | -16% |
+| 0.79 | 0.67 | -10% |
+
+: Validation 1993--2009 {#tbl-calib-valid}
+
+Calibration statistics of the best performing model.
+:::
+
+
+@fig-calib-batch compares the best-performing models of every batch, by stream gauge station. It shows that the model tends to converge to a similar solution every time.
+
+
+
+::: {#fig-calib-batch}
+
+::: {.panel-tabset}
+
+## KGE
+
+![](sections/fig/batchBestOF.py.csv.KG.png)
+
+## NSE
+
+![](sections/fig/batchBestOF.py.csv.NS.png)
+
+## Bias
+
+![](sections/fig/batchBestOF.py.csv.Bias.png)
+
+:::
+
+Calibration statistics for the best-performing model from each batch of 5,001 simulations. Each point represents the batch average across all stations (i.e., the 'global' value). The best-performing model was produced in Batch-8.
+:::
+
+
+Batch-8, which yielded the *best-performing* model, achieved superior global calibration metrics--including KGE, NSE, and bias--compared to all other batches. Additionally, it exhibited the highest validation performance, indicating robust generalization beyond the calibration period.
+
+<br>
+
+
+### Simulated Reservoir Stages
+
+As a second, more subjective, means of validation is to see how the model performed against observed stages. The model, being constrained to observed stages (@sec-resops) and rules curves (@fig-rulecurves). As can be seen in @fig-simres, the model (solid lines; 1992-2024) tend to persist within the range of observed reservoir stages (2016-2023).
+
+
+::: {#fig-simres}
+
+::: {.panel-tabset}
+
+## Hilton Falls
+
+![](sections/fig/Monitoring Network_Real Time Monitoring_Hilton Falls Dam_Download_12_4_2024 4_19_58 PM-Simulated.png){width=800}
+
+## Kelso Reservoir
+
+![](sections/fig/Monitoring Network_Real Time Monitoring_Kelso Dam_Download_12_4_2024 4_21_34 PM-Simulated.png){width=800}
+
+## Mountsberg Dam
+
+![](sections/fig/Monitoring Network_Real Time Monitoring_Mountsberg Dam_Download_12_4_2024 4_22_28 PM-Simulated.png){width=800}
+
+## Scotch Block Dam
+
+![](sections/fig/Monitoring Network_Real Time Monitoring_Scotch Block Dam_Download_12_4_2024 4_23_54 PM-Simulated.png){width=800}
+
+:::
+
+Reservoir stage simulation at CH reservoirs. Lines = simulated stages; points = monitored stages; dashed line = rule curve.
+:::
+
+<br>

@@ -1,0 +1,22 @@
+
+241204
+
+Hi Mason, 
+
+Below is a link to CH’s DataCurrent login page and your credentials. 
+
+Website: https://cloud.datacurrent.ca/login
+Username: User@ORMGP.ca
+Password: ORMGPuser@123
+
+This should provide access to the following time-series data which can be extracted through csv file downloads:
+
+1.           Rainfall & air temperature data (where available) from all stations within and adjacent to CH jurisdictional boundary
+2.           Miscellaneous climate data from weather stations within CH jurisdiction
+3.           Snow depth & SWE data from snow stations within CH jurisdiction
+4.           Water level, estimated discharge and storage volume, air temperature, water temperature & miscellaneous climate data (where available) from CH reservoirs
+5.           Water level, water temperature & preliminary discharge data (where available) from stream gauging stations within CH jurisdiction (contact WSC for stream discharge time-series information) 
+
+If you have any questions, please let me know.
+
+Cheers,

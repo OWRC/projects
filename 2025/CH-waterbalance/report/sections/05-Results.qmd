@@ -1,0 +1,279 @@
+
+
+# Results
+
+## Scenarios
+
+This section presents results from 3 scenarios:
+
+1. Current/baseline conditions
+1. Future land use conditions
+1. Future climate conditions
+
+Many more scenarios could be added however this is beyond the scope of the current study--additional potential studies could include: pre-development conditions, future land use $+$ future climate, alternative future climate projections and emission scenarios, etc. Instead, the three scenarios discussed below demonstrate how a scenario can be applied and compared with some baseline condition to investigate how the water-balance might be affected.
+
+The water-balance is defined using four main components (following @fig-hbv): precipitation $P=RF+SF$, actual evapotranspiration $EA$, fast runoff $Q_\text{UZ}$ and groundwater recharge $G$. For the model to remain physically valid (i.e., a conservation of mass), the following water-balance equation must hold true:
+
+$$ 
+    P=EA+Q_\text{UZ}+G
+$$
+
+It should be noted that the above equation will never completely closes as there will be a residual that reflects the amount of water left in the model soil storage units (@fig-hbv). For instance in the baseline scenario, residuals less than 3.5 mm can be found, representing far less than 1% total annual precipitation--a negligible amount.
+
+For every scenario, maps of the 4 components are given, either in absolute terms or relative to the baseline condition. Furthermore, groundwater recharge is added to the groundwater flow model (@sec-gwmdl) to produce simulated groundwater discharge to streams. From these outputs, impacts due to climate change and development pressure can be quantified on a sub-watershed basis. All outputs are converted into a standard GIS format such that CH can readily perform additional analysis to suit their needs. @sec-del-scripts outlines a number of scripts included with this model to facilitate the translation of model outputs to a GIS (i.e., workable) format.
+
+
+### Baseline {#sec-results-baseline}
+
+The "baseline" scenario represents current conditions and is used to reveal changes under the remaining proposed scenarios. The parameters used for this model is the same as the parameters calibrated to the best-performing model (@sec-calib-valid).
+
+::: {#fig-baseline-wb}
+
+::: {.panel-tabset}
+
+## Precipitation
+
+![](sections/fig/model-results/baseline-precip.png){width=800}
+
+## Total Evapotranspiration
+
+![](sections/fig/model-results/baseline-aet.png){width=800}
+
+## Runoff
+
+![](sections/fig/model-results/baseline-runoff.png){width=800}
+
+## Groundwater Recharge
+
+![](sections/fig/model-results/baseline-recharge.png){width=800}
+
+## Groundwater Discharge
+
+![](sections/fig/model-results/baseline-discharge.png){width=800}
+
+## Water-balance residual
+
+![](sections/fig/model-results/baseline-resid.png){width=800}
+
+:::
+
+Long-term, annual average water-balance under current/baseline conditions.
+:::
+
+
+Total annual precipitation (__RF__ $+$ __SF__ -- @fig-hbv) varies almost 100 millimetres per year (mm/yr) across the study area. It is apparent that the Niagara Escarpment provides a bit of a rain shadow below and to the east. 
+
+Total evapotranspiration (__EA__) varies quite significantly and is the greatest loss of precipitation.  In general, in areas that are most vegetated appear to lose most water to __EA__. Due to the relatively high runoff, urban areas tend to have less evapotranspiration.
+
+Runoff (__Q~UZ~__) is dependent on 2 factors: the amount of impervious cover (urban areas) and the hydraulic conductivity of the surficial soils. For the latter case, surficial soils below the escarpment make up the Halton till plain, which has a relatively low permeability. As a result. water in the upper zone (__UZ__) is restricted from recharging the groundwater system (__LZ__) and thus is made more available for runoff and capillary rise.
+
+Groundwater recharge (__G__) roughly looks like the inverse of runoff, where less recharge occurs in urban areas and the till plains yet greater recharge occurs above the escarpment along the exposed band of paleozoic bedrock (@fig-surfgeo).
+
+Groundwater discharge to streams is an output from the MODFLOW model (@sec-gwmdl). Groundwater losses to model cells assigned head-dependent flux boundary conditions (used to represent streams) are aggregated to the same raster definition as the above water balance components. Admittedly, the groundwater discharge maps are hard to view at this scale as stream channels only make up a minority of raster cells; however the scripts provided allow for the import of the MODFLOW results into a standard GIS format (@sec-MODFLOW-out). Nonetheless, one can see the presence of stream channels and those that experience the greatest relative baseflow pick-up.
+
+Lastly, applying these water-balance components (with the exception of groundwater discharge to streams--a MODFLOW output) to the equation above shows that there is a negligible residual never exceeding 3.5 mm.
+
+> Note: model results can be further visualized using [RavenView](https://raven.uwaterloo.ca/RavenView/RavenView.html), see @sec-ravenview for more instruction.
+
+<br>
+
+### Future land use {#sec-results-future-landuse}
+
+>Future land use scenario could not be accomplished to date as the future land use planning has not been compiled. Once prepared, the ORMGP will assist in completing this task.
+
+<br>
+
+### Future climate {#sec-results-future-climate}
+
+This study used a single future climate scenario, based on a global circulation model (GCM) that was statistically downscaled to a daily time series. To assess hydrological responses under changing climate conditions, model outputs from two distinct time periods within the downscaled dataset were compared. It is important to note that comparing future projections directly to observed historical climate can be misleading, as biases inherent in the statistical downscaling process may be mistaken for actual climate change impacts.
+
+Users aiming to compare with historical observed climate should apply the *change field method* (EBNFLO Environmental and AquaResource Inc., 2010), which adjusts a historical data time series based on projected changes in precipitation and temperature. However, this method assumes that weather patterns remain unchanged and only absolute values vary. This can be a limitation, as rising temperatures may alter storm frequency—something that downscaling approaches are better equipped to capture.
+
+As outlined in @sec-temporal-ocdp, there are 29 potential GCMs available for selection. For this study, a single model was chosen as a proof of concept. Specifically, the model exhibiting the greatest central tendency—referred to here as the "median model"—was selected. Based on the scatter plot analysis shown in @fig-ocdp-model-scatter, the downscaled GCM __CSIRO-Mk3-6-0__ (#10) was identified as the most representative and subsequently processed using the script detailed in @sec-ocdp-script.
+
+<br>
+
+::: {#tbl-results-future-climate layout-ncol=2}
+| SWS ID | __P__ | __EA__ | __Q~UZ~__ | __G__ |
+|------|------|------|------|------|
+| 1 | 1005 | 444 | 396 | 166 |
+| 2 | 1017 | 405 | 361 | 251 |
+| 3 | 1043 | 455 | 424 | 164 |
+| 4 | 1063 | 495 | 439 | 129 |
+| 5 | 1040 | 400 | 505 | 134 |
+| 6 | 1051 | 506 | 285 | 260 |
+| 7 | 1048 | 418 | 455 | 175 |
+| 8 | 1060 | 420 | 426 | 214 |
+| 9 | 1050 | 388 | 509 | 153 |
+| 10 | 1027 | 381 | 444 | 202 |
+| 11 | 1064 | 494 | 357 | 214 |
+| 12 | 1063 | 424 | 353 | 286 |
+| 13 | 1063 | 476 | 418 | 169 |
+| 14 | 1060 | 390 | 515 | 155 |
+| 15 | 1052 | 420 | 501 | 131 |
+| 16 | 1064 | 453 | 433 | 178 |
+| 17 | 1073 | 508 | 215 | 350 |
+| 18 | 1047 | 417 | 510 | 120 |
+| 19 | 1071 | 524 | 254 | 293 |
+| 20 | 1046 | 411 | 465 | 170 |
+| 21 | 1064 | 507 | 369 | 188 |
+| 22 | 1065 | 490 | 288 | 287 |
+| 23 | 1062 | 524 | 424 | 115 |
+| 24 | 1021 | 442 | 478 | 100 |
+| 25 | 1065 | 484 | 428 | 154 |
+| 26 | 1063 | 515 | 413 | 136 |
+| 27 | 1016 | 384 | 394 | 237 |
+| 28 | 1048 | 498 | 432 | 117 |
+| 29 | 1034 | 404 | 522 | 107 |
+| 30 | 1072 | 502 | 302 | 268 |
+| 31 | 1063 | 482 | 483 | 99 |
+| 32 | 1057 | 459 | 497 | 100 |
+| 33 | 1038 | 489 | 435 | 113 |
+| 34 | 1048 | 515 | 402 | 131 |
+| 35 | 1047 | 467 | 355 | 226 |
+| 36 | 1063 | 438 | 534 | 91 |
+| 37 | 1040 | 431 | 440 | 169 |
+| 39 | 1060 | 515 | 436 | 109 |
+| 40 | 1066 | 516 | 248 | 304 |
+| 41 | 1019 | 378 | 432 | 210 |
+| 42 | 1010 | 469 | 349 | 192 |
+| 43 | 1033 | 383 | 438 | 213 |
+| 44 | 1051 | 419 | 456 | 176 |
+| 45 | 1052 | 435 | 363 | 255 |
+| 46 | 1052 | 452 | 393 | 207 |
+| 47 | 1032 | 503 | 285 | 244 |
+| 48 | 1054 | 478 | 329 | 247 |
+| 49 | 1048 | 457 | 383 | 208 |
+| 50 | 1049 | 522 | 261 | 267 |
+| 51 | 1023 | 393 | 425 | 204 |
+| 52 | 918 | 396 | 270 | 252 |
+| 53 | 1036 | 471 | 330 | 235 |
+| 54 | 1035 | 448 | 368 | 219 |
+| 55 | 1067 | 436 | 360 | 271 |
+| 56 | 1062 | 428 | 506 | 127 |
+| 57 | 1055 | 466 | 465 | 124 |
+| 58 | 1050 | 468 | 456 | 126 |
+| 59 | 1073 | 463 | 296 | 314 |
+| 60 | 1067 | 503 | 297 | 267 |
+| 61 | 1073 | 475 | 201 | 397 |
+| 62 | 1054 | 517 | 337 | 207 |
+| 63 | 1071 | 529 | 239 | 304 |
+| 66 | 1070 | 467 | 170 | 440 |
+| 68 | 1053 | 471 | 321 | 266 |
+| 70 | 1061 | 473 | 431 | 158 |
+| 71 | 1045 | 478 | 361 | 206 |
+
+: Current conditions 1991--2021 {#tbl-tbl-results-future-climate-1991}
+
+| __P__ | __EA__ | __Q~UZ~__ | __G__ |
+|------|------|------|------|
+| 1049 | 489 | 401 | 158 |
+| 1060 | 455 | 359 | 246 |
+| 1089 | 503 | 427 | 159 |
+| 1109 | 537 | 449 | 122 |
+| 1085 | 451 | 504 | 130 |
+| 1100 | 549 | 294 | 256 |
+| 1092 | 468 | 455 | 169 |
+| 1106 | 471 | 426 | 208 |
+| 1095 | 440 | 506 | 149 |
+| 1071 | 432 | 442 | 197 |
+| 1110 | 540 | 361 | 207 |
+| 1109 | 472 | 359 | 277 |
+| 1108 | 522 | 421 | 164 |
+| 1105 | 442 | 512 | 150 |
+| 1097 | 470 | 502 | 126 |
+| 1110 | 500 | 439 | 170 |
+| 1121 | 553 | 219 | 347 |
+| 1093 | 467 | 510 | 116 |
+| 1121 | 568 | 261 | 290 |
+| 1091 | 461 | 464 | 165 |
+| 1109 | 551 | 376 | 181 |
+| 1114 | 536 | 294 | 283 |
+| 1118 | 567 | 443 | 107 |
+| 1070 | 488 | 487 | 94 |
+| 1117 | 530 | 439 | 148 |
+| 1109 | 555 | 424 | 128 |
+| 1059 | 436 | 392 | 231 |
+| 1095 | 542 | 442 | 110 |
+| 1078 | 454 | 522 | 102 |
+| 1120 | 546 | 309 | 263 |
+| 1109 | 528 | 489 | 92 |
+| 1105 | 507 | 503 | 94 |
+| 1091 | 532 | 451 | 106 |
+| 1094 | 558 | 411 | 124 |
+| 1092 | 513 | 356 | 221 |
+| 1109 | 487 | 536 | 85 |
+| 1084 | 479 | 442 | 162 |
+| 1108 | 558 | 446 | 102 |
+| 1118 | 561 | 256 | 301 |
+| 1063 | 429 | 431 | 203 |
+| 1053 | 512 | 356 | 184 |
+| 1077 | 434 | 435 | 208 |
+| 1096 | 469 | 456 | 170 |
+| 1098 | 484 | 365 | 248 |
+| 1097 | 500 | 396 | 200 |
+| 1079 | 545 | 293 | 239 |
+| 1103 | 522 | 340 | 239 |
+| 1093 | 504 | 386 | 202 |
+| 1096 | 565 | 268 | 262 |
+| 1066 | 441 | 425 | 199 |
+| 957 | 436 | 278 | 242 |
+| 1081 | 516 | 337 | 228 |
+| 1082 | 492 | 375 | 213 |
+| 1113 | 485 | 366 | 261 |
+| 1110 | 477 | 512 | 121 |
+| 1103 | 512 | 473 | 117 |
+| 1095 | 514 | 460 | 120 |
+| 1121 | 509 | 303 | 308 |
+| 1114 | 546 | 305 | 261 |
+| 1121 | 521 | 208 | 391 |
+| 1105 | 559 | 354 | 198 |
+| 1121 | 573 | 245 | 302 |
+| 1120 | 515 | 171 | 440 |
+| 1110 | 515 | 334 | 264 |
+| 1107 | 519 | 434 | 152 |
+| 1090 | 524 | 364 | 200 |
+
+: Future conditions 2041--2071 {#tbl-tbl-results-future-climate-2041}
+
+Sub-watershed (SWS) water balances under a changing climate according to GCM __CSIRO-Mk3-6-0__ (mm/yr). Processed using script outlined in @sec-raven-future-script. (For SWS ID, refer to @fig-map-subbasins.)
+:::
+
+<br>
+
+::: {#fig-climatechange-wb}
+
+::: {.panel-tabset}
+
+## Precipitation
+
+![](sections/fig/model-results/climatechange-precip.png){width=800}
+
+## Total Evapotranspiration
+
+![](sections/fig/model-results/climatechange-aet.png){width=800}
+
+## Runoff
+
+![](sections/fig/model-results/climatechange-runoff.png){width=800}
+
+## Groundwater Recharge
+
+![](sections/fig/model-results/climatechange-recharge.png){width=800}
+
+:::
+
+Projected future (2040--2070) changes to the water balance at the sub-watershed scale according to __CSIRO-Mk3-6-0__.
+:::
+
+<br>
+
+Climate change analysis indicates expected changes in hydrology across the CH study area. Under the median projection GCM (@sec-temporal-ocdp), annual precipitation is projected to increase by approximately 4--5% during the 2040--2070 period. This increase is more pronounced above the Niagara Escarpment (@fig-climatechange-wb), where precipitation may rise by up to 60 mm/year, compared to about 40 mm/year below the escarpment.
+
+This added precipitation leads to increased runoff, particularly in non-urbanized areas above the escarpment. In some locations, runoff increases by as much as 20 mm/year—about a 10% rise.
+
+A projected temperature increase of approximately +2.8°C (@fig-ocdp-model-scatter) results in higher evapotranspiration rates, exceeding 40–50 mm/year (roughly 10%). This effect is more significant below the escarpment, where tighter till soils limit infiltration, allowing more surface water to evaporate.
+
+Despite an additional 50 mm/year of precipitation, increased evapotranspiration and runoff largely offset the surplus, leading to a net decline in groundwater recharge across the basin. While reductions are generally more notable below the escarpment (around 10 mm/year or ~10%), the escarpment itself is not the key boundary. Instead, areas just above the escarpment, where more conductive Paleozoic bedrock is present, show less reduction in recharge. In summary, areas with lower subsurface conductivity are more adversely affected in terms of groundwater recharge under projected climate change conditions.
+
+<br>

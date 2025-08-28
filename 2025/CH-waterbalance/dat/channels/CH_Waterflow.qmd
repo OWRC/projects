@@ -1,0 +1,47 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis version="3.34.6-Prizren">
+  <identifier>CH_Watercourse</identifier>
+  <parentidentifier></parentidentifier>
+  <language>ENG</language>
+  <type>dataset</type>
+  <title>CH_Watercourse</title>
+  <abstract>The dataset carries the attributes to support engineering, planning and regulations, source water, ecology, and cartography related activities. The product is dendritic, fully connected, and topologically correct which means that all the stream segments flow in the correct direction. As such, the product can also be used for stream tracing operations in both upstream and downstream direction. However, to enable this functionality, virtual stream segments were digitized in water bodies to maintain continuity of flow in the watercourse network where online reservoirs, lakes, stormwater ponds, and ponds were present. The need to develop accurate flood maps in our watershed led Conservation Halton to acquire detailed topographic and elevation data based on LIDAR technology in 2018. Development in the watershed had modified, rerouted or even created new water courses, but the extent of the alterations was unknown as the methodology used in the past to map watercourses relied primarily on visual interpretation of aerial imagery and other reference layers such as low resolution digital elevation model (DEM) which provided an incomplete, inconsistent or in some cases erroneous representation of water features. The high sampling density of LIDAR technology provides detailed visual evidence of watercourses location and thus the dataset was heavily relied upon in the conduct of the inventory which was conducted at a scale of 1:500. Where required, the most recent orthorectified aerial imagery from the Region of Halton (2019), Region of Peel (2017), City of Hamilton (2019) and Township of Puslinch (2016) were used as a supplementary dataset to either confirm the LIDAR based interpretation or as a basis for data capture. 
+
+The watercourse dataset represents the water drainage network of Conservation Halton watersheds consisting predominantly of stream/river features. Additional features are anthropogenically derived structures such as ditches, culverts, storm sewer pipes and engineered watercourses. </abstract>
+  <contact>
+    <name></name>
+    <organization></organization>
+    <position></position>
+    <voice></voice>
+    <fax></fax>
+    <email></email>
+    <role></role>
+  </contact>
+  <links/>
+  <dates/>
+  <fees></fees>
+  <rights>Jeff Lee; Conservation Halton; 2021-04-20</rights>
+  <encoding></encoding>
+  <crs>
+    <spatialrefsys nativeFormat="Wkt">
+      <wkt>BOUNDCRS[SOURCECRS[PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["Unknown based on GRS 1980 ellipsoid using towgs84=0,0,0,0,0,0,0",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1],ID["EPSG",7019]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8901]]],CONVERSION["UTM zone 17N",METHOD["Transverse Mercator",ID["EPSG",9807]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",-81,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["Scale factor at natural origin",0.9996,SCALEUNIT["unity",1],ID["EPSG",8805]],PARAMETER["False easting",500000,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]],ID["EPSG",16017]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1,ID["EPSG",9001]]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1,ID["EPSG",9001]]]]],TARGETCRS[GEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["latitude",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["longitude",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]]],ABRIDGEDTRANSFORMATION["Transformation from unknown to WGS84",METHOD["Position Vector transformation (geog2D domain)",ID["EPSG",9606]],PARAMETER["X-axis translation",0,ID["EPSG",8605]],PARAMETER["Y-axis translation",0,ID["EPSG",8606]],PARAMETER["Z-axis translation",0,ID["EPSG",8607]],PARAMETER["X-axis rotation",0,ID["EPSG",8608]],PARAMETER["Y-axis rotation",0,ID["EPSG",8609]],PARAMETER["Z-axis rotation",0,ID["EPSG",8610]],PARAMETER["Scale difference",1,ID["EPSG",8611]]]]</wkt>
+      <proj4>+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+      <srsid>2294</srsid>
+      <srid>26917</srid>
+      <authid>EPSG:26917</authid>
+      <description>NAD83 / UTM zone 17N</description>
+      <projectionacronym>utm</projectionacronym>
+      <ellipsoidacronym>EPSG:7019</ellipsoidacronym>
+      <geographicflag>false</geographicflag>
+    </spatialrefsys>
+  </crs>
+  <extent>
+    <spatial miny="43.27150000000000318" dimensions="2" maxx="-79.61839999999999407" minx="-80.13209999999999411" minz="0" maxy="43.63629999999999853" maxz="0" crs="EPSG:26917"/>
+    <temporal>
+      <period>
+        <start></start>
+        <end></end>
+      </period>
+    </temporal>
+  </extent>
+</qgis>

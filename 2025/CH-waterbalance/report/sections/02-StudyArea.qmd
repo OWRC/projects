@@ -1,0 +1,82 @@
+
+# Study Area
+
+Conservation Halton oversees several significant watersheds that drain into western Lake Ontario, playing a vital role in water quality, flood management, and biodiversity conservation. In all, the CH jurisdiction covers roughly 970 km².
+
+The largest watershed under CH's jurisdiction is the Sixteen Mile Creek Watershed. Covering approximately 372 km², this watershed flows through Milton, Oakville, Halton Hills, and parts of Wellington County before reaching Lake Ontario. The landscape includes forested areas, wetlands, and agricultural land, creating a diverse ecosystem that supports many species, including some that are considered at risk. As urban areas such as Milton and Oakville continue to grow, managing water quality and protecting natural spaces within this watershed remains a priority.
+
+Another key watershed is the Bronte Creek Watershed, spanning about 307 km² and extending through Burlington, Oakville, Milton, and Hamilton. Bronte Creek itself originates in the Niagara Escarpment and winds its way through conservation lands, parks, and agricultural areas before emptying into Lake Ontario. Bronte Creek Provincial Park is a well-known natural feature within this watershed, offering critical habitat for wildlife and a popular destination for outdoor recreation. However, increasing urbanization has led to concerns about stormwater runoff and pollution, making ongoing conservation efforts essential.
+
+The Grindstone Creek Watershed is smaller, covering roughly 90 km², but it is an ecologically significant region. Flowing from the Niagara Escarpment through protected areas in Burlington and Hamilton, Grindstone Creek plays an important role in maintaining water quality in Burlington Bay. This watershed is home to valuable wetlands, including Cootes Paradise Marsh, which serves as a crucial habitat for migratory birds and aquatic species. Conservation efforts in this region focus on restoring wetland health, controlling invasive species, and reducing pollution from surrounding urban areas.
+
+Beyond these major watersheds, CH also manages smaller tributaries and portions of the Credit River watershed that pass through the Halton Region. These smaller water systems contribute to the overall health of the larger watersheds, providing wildlife corridors, natural filtration for pollutants, and flood control. Protecting these watersheds ensures the sustainability of local ecosystems, supports biodiversity, and maintains the natural beauty of the region for future generations.
+
+```{r}
+#| label: fig-map-sws
+#| fig-cap: "Subwatersheds of Conservation Halton and monitoring locations."
+#| warning: false
+
+library(leaflet)
+library(dplyr)
+library(sf)
+
+CH.watersheds <- read_sf('../delivery/GIS/CH_Watershed.shp') %>% st_transform(4326)
+
+CH.streamgauges <- read_sf("../shp/locsw_select.shp") %>% st_transform(4326)
+
+CH.watersheds.pal <- colorFactor(palette = "Dark2", domain = CH.watersheds$Watershed_, n = 8, reverse = TRUE)
+
+leaflet(CH.watersheds) %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addScaleBar(position = "bottomleft") %>%
+  addPolygons(
+    color = 'black',
+    weight = 1,
+    opacity = 1.0,
+    fillColor = ~CH.watersheds.pal(Watershed_),
+    fillOpacity = 0.5,
+    stroke = TRUE,
+    label = ~Watershed_,
+    popup = ~paste0('<b>',Watershed_,'</b><br>Area: ',round(area/1000000,1),'km²',
+                    '<br>'),
+    highlightOptions = highlightOptions(weight = 5, fillOpacity = 0.8),
+  ) %>%
+  addMarkers(
+    data=CH.streamgauges %>% mutate(DTb=format(as.Date(DTb),format="%b, %Y"),DTe=format(as.Date(DTe),format="%b, %Y")),
+    group = "Stream gauges",
+    label = ~paste0(LOC_NAME,': ',LOC_NAME_A),
+    popup = ~paste0('<b>',LOC_NAME,': ',LOC_NAME_A,'</b>',
+                    '<br>Drainage area: ',round(SW_DRAINAG,1),'km²',
+                    '<br>POR: ',DTb,' to ',DTe,
+                    '<br><a href="https://owrc.shinyapps.io/sHyStreamflow/?sID=',LOC_ID,'" target="_blank" rel="noopener noreferrer">open timeseries (ORMGP)</a>'),
+  ) %>%
+  addCircleMarkers(lng = -79.879, 
+                   lat = 43.64,
+                   radius = 7,
+                   color='darkred',
+                   group = "Longterm Climate stations",
+                   label = 'GEORGETOWN WWTP',
+                   popup = ~paste0('<b>GEORGETOWN WWTP</b>',
+                    '<br><a href="https://owrc.shinyapps.io/sHyMet/?sID=148831" target="_blank" rel="noopener noreferrer">open timeseries (ORMGP)</a>'),
+  ) %>%
+  addLegend(position = "bottomright", pal = CH.watersheds.pal, values = CH.watersheds$Watershed_,
+            title = "Watershed",
+            opacity = 1.) %>%
+  addLayersControl(
+    overlayGroups = c("Stream gauges","Longterm Climate stations"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>% hideGroup(c("Stream gauges","Longterm Climate stations"))
+```
+
+
+
+## Time Series Data
+
+{{< include sections/02a-TemporalData.qmd >}}
+
+
+<br>
+
+## Spatial Data
+
+{{< include sections/02b-SpatialData.qmd >}}

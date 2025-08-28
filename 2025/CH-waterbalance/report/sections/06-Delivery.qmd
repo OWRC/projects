@@ -1,0 +1,25 @@
+
+# Data Delivery
+
+## File Structure
+
+- `report` -- this report in 2 formats: i) html (interactive) ii) pdf (printable)
+- `GIS` -- spatial data used in the report and in model builing scripts
+- `model` -- baseline/current conditions model (@sec-results-baseline). The baseline model has been assigned the short-name/filename `Raven2025`.  Any derivatives of the model should been given an appropriate suffix added to this short-name. (The purpose of *short-name* is to keep model files organized in an intuitive manner. Short names are kept short because file names have length restrictions)
+- `model_future_landuse` -- future land use model (@sec-results-future-landuse)
+- `model_future_climate_CSIRO-Mk3-6-0_RCP85` -- climate change model using the __CSIRO-Mk3-6-0__ output (@sec-results-future-climate), provided as a sample
+- `MODFLOW` -- groundwater flow model (@sec-gwmdl)
+- `scripts` (section @sec-del-scripts)
+    - `scripts\supp` -- additional data files required by the scripts *please do not change or rename files*
+
+<br>
+
+## RavenView {#sec-ravenview}
+
+{{< include sections/06b-ravenview.qmd >}}
+
+<br>
+
+## Processing Scripts {#sec-del-scripts}
+
+{{< include sections/06c-scripts.qmd >}}

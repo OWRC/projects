@@ -1,0 +1,210 @@
+
+
+Scripts are provided to CH in order to continue to operate the model into the future. These range from updating climate forcings to updating land use to creating GIS/presentation-quality figures from model outputs. For additional support, please feel free to contact the ORMGP.
+
+All scripts are made available in the `scripts` directory and are written in [jupyter](https://jupyter.org/) format. The jupyter files have all been successfully run using [Visual Studio Code](https://code.visualstudio.com/).
+
+In order to run these scripts, [Python version 3](https://www.python.org/) must be installed along with the following packages:
+
+- [`datetime`](https://docs.python.org/3/library/datetime.html) -- time and date tools
+- [`pandas`](https://pandas.pydata.org/) -- Data table tools
+- [`NumPy`](https://numpy.org/) -- Numerical/math tools
+- [`SciPy`](https://scipy.org/) -- Fundamental algorithms for scientific computing in Python
+- [`pyshp`](https://pypi.org/project/pyshp/) -- ESRI shpefile reader
+- [`shapely`](https://shapely.readthedocs.io/en/stable/) -- polygon shape manipulation
+- [`pyproj`](https://pyproj4.github.io/pyproj/stable/) -- Geographic projection transformation
+- [`flopy`](https://flopy.readthedocs.io/en/stable/) -- MODFLOW reader
+- [`PIL`](https://pypi.org/project/pillow/) -- for raster processing
+- [`pickle`](https://docs.python.org/3/library/pickle.html) -- for storing/retrieving binary data
+- [`tqdm`](https://tqdm.github.io/) -- progress bar (optional)
+
+
+The delivered baseline model provided in the `model_baseline` directory contains all the data needed to run a model. To __*run*__ the model, simply double-click the batch file: `Raven2025.bat` and wait for the model to complete. (A model simulation for a 30-year period will take roughly 2 minutes to compute.)
+
+<br>
+
+### Updating Current Climate Forcings  {#sec-ormgp-cds-script}
+
+The model was built to rely on ORMGP's [Near Real-time Climate Data Service](https://owrc.github.io/interpolants/sources/climate-data-service.html) (CDS).  The advantage here is that the data are fully infilled back to 1901 and are updated nightly. 
+
+> Note: At the time of this report, CH has not provided an API connection to their DataCurrent service. As a result, the climate data available on the CH DataCurrent platform is not incorporated into this model. To establish integration, ORMGP requires a back-end API connection to DataCurrent--similar to those in place with several of our partner agencies that support the ORMGP-CDS.
+
+Anytime the script is run, it is defaulted to collect data from October 1^st^, 30-years prior to the date the script is run. The script then creates Raven *Time Series Input files* (.rvt) and writes them to `scripts/output/current_forcing`. Users must copy these files and replace those in the `model_baseline/input` directory. 
+
+Lastly, users must update the time horizon in the Raven *Primary Input file* (.rvi), which is printed by the jupyter script, for example:
+
+```r
+:StartDate 1993-10-01 00:00:00
+:EndDate   2024-09-30 00:00:00
+```
+
+> Script: `update_climate.ipynb`
+
+<br>
+
+### Updating Land Use
+
+A common application of the Raven model is to update land use in order to explore potential impacts from proposed development.
+
+The script provided will recreate the Raven *HRU/Basin Definition file* (.rvh) and write it to `model_future_landuse/input`. The script also copies the required model files from the `model_baseline` directory. Copy and replace the HRU block into the .rvh file and run the model.
+
+> Script: `update_landuse.ipynb`
+
+
+Please note that altered land use rasters must conform to 
+
+1. a pre-determined (for the 2025 CH water balance) raster definition (@sec-landuse-script-griddefinition); 
+1. must be saved as an [ESRI *(.bil)](https://desktop.arcgis.com/en/arcmap/latest/manage-data/raster-and-images/bil-bip-and-bsq-raster-files.htm) binary file with an appropriate header (*.hdr) file;
+1. saved as either int16 or int32 data types;
+1. land use categorization designated into the following 11 classes with its corresponding ID:
+
+| ID | Class description |
+|:---|:---|
+1 | Forest |
+2 | Hedge Row |
+3 | Marsh |
+4 | Swamp |
+5 | Forested Swamp |
+6 | Water |
+7 | Agriculture |
+8 | Undifferentiated |
+9 | Settlement and Developed Lands |
+10 | Transportation | 
+11 | Extraction-Aggregate |
+
+<br>
+
+#### Raster definition  {#sec-landuse-script-griddefinition}
+
+Projection: [EPSG:3161 - NAD83/Ontario MNR Lambert](https://epsg.io/3161)
+
+WKT:
+
+```r
+PROJCS["NAD83 / Ontario MNR Lambert",
+    GEOGCS["NAD83",
+        DATUM["North_American_Datum_1983",
+            SPHEROID["GRS 1980",6378137,298.257222101],
+            TOWGS84[0,0,0,0,0,0,0]],
+        PRIMEM["Greenwich",0,
+            AUTHORITY["EPSG","8901"]],
+        UNIT["degree",0.0174532925199433,
+            AUTHORITY["EPSG","9122"]],
+        AUTHORITY["EPSG","4269"]],
+    PROJECTION["Lambert_Conformal_Conic_2SP"],
+    PARAMETER["latitude_of_origin",0],
+    PARAMETER["central_meridian",-85],
+    PARAMETER["standard_parallel_1",44.5],
+    PARAMETER["standard_parallel_2",53.5],
+    PARAMETER["false_easting",930000],
+    PARAMETER["false_northing",6430000],
+    UNIT["metre",1,
+        AUTHORITY["EPSG","9001"]],
+    AXIS["Easting",EAST],
+    AXIS["Northing",NORTH],
+    AUTHORITY["EPSG","3161"]]
+```
+
+Raster header (*.hdr) file definition:
+
+```r
+NROWS          719
+NCOLS          726
+ULXMAP         1323330
+ULYMAP         11906070
+XDIM           60
+YDIM           60
+NODATA         -9999
+```
+
+<br>
+
+### Creating Future Climate Projections {#sec-ocdp-script}
+
+The model was constructed such that it remained amenable to applying future climate scenarios to test the impact of future climate. The script provided leverages the [Ontario Climate Data Portal (OCDP)](https://lamps.math.yorku.ca/OntarioClimate/) maintained by York University (@sec-temporal-ocdp). This portal was chosen for its ability to return daily projections for the rest of the century. Users must:
+
+1. choose an emission scenario (RCP-2.6, RCP-4.5, RCP-6.0, or RCP-8.5)
+1. run `getOCDP.py` to download raw data from the OCDP API (takes roughly 20 minutes to complete and downloads close to 20GB of data per emission scenario).
+1. choose a future time Horizon and update the time horizon in the Raven *Primary Input file* (.rvi)--see [Updating Current Climate Forcings](#updating-current-climate-forcings) above.
+1. run the future climate model by double-clicking `Raven2025.bat`.
+
+The script will:
+
+1. copy of the `model_baseline` directory and rename the directory to something descriptive (e.g., `model_future_climate`)
+1. write *Time Series Input files* (.rvt) to `model_future_climate/input`
+
+> Script: `future_climate.ipynb`
+
+After the script is run, modification to 2 Raven model files must be made:
+
+1. Update the time horizon in the Raven *Primary Input file* (.rvi):
+
+```r
+:StartDate 1981-10-01 00:00:00
+:EndDate   2099-09-30 00:00:00
+```
+
+2. Delete the following lines from the *Time Series Input file* (.rvt):
+
+```r
+# Observing outlet at subbasin 48 to file: 02HB022.csv 
+:RedirectToFile input\g02hb022.rvt
+
+# Observing outlet at subbasin 54 to file: 02HB028.csv 
+:RedirectToFile input\g02hb028.rvt
+
+# Observing outlet at subbasin 55 to file: 02HB012.csv 
+:RedirectToFile input\g02hb012.rvt
+
+# Observing outlet at subbasin 56 to file: 02HB005.csv 
+:RedirectToFile input\g02hb005.rvt
+
+# Observing outlet at subbasin 57 to file: 02HB004.csv 
+:RedirectToFile input\g02hb004.rvt
+
+# Observing outlet at subbasin 58 to file: 02HB027.csv 
+:RedirectToFile input\g02hb027.rvt
+
+# Observing outlet at subbasin 60 to file: 02HB011.csv 
+:RedirectToFile input\g02hb011.rvt
+
+# Observing outlet at subbasin 63 to file: 02HB033.csv 
+:RedirectToFile input\g02hb033.rvt
+
+# Observing outlet at subbasin 64 to file: 02HB032.csv 
+:RedirectToFile input\g02hb032.rvt
+```
+
+<br>
+
+
+### Reading Future Climate Outputs {#sec-raven-future-script}
+
+This script is used to read Raven model outputs after the model has been run with climate change projections. The script simply takes the output of the model and compares water balances (at the sub-watershed scale) for 2 user-defined time periods. Data are output in csv format that may be joined to the CH sub-watershed polygon shapefile: `GIS/CH_Subs_Raven2025.shp`.
+
+> Script: `future_raven_output.ipynb`
+
+<br>
+
+### Creating Output Rasters
+
+Running this script requires the user to defined the model directory. The script with then write raster files to the `model/output` folder. This script serves 2 purposes:
+
+1. Creates raster files manageable by common GIS platforms, currently [ESRI *.bil](https://desktop.arcgis.com/en/arcmap/latest/manage-data/raster-and-images/bil-bip-and-bsq-raster-files.htm) binary files. These files include long-term average (mm/yr):
+    1. Precipitation
+    1. Evapotranspiration
+    1. Runoff
+    1. Groundwater Recharge
+1. Creates a Groundwater Recharge MODFLOW file (.RCH) that needs to be copied into the MODFLOW folder: `MODFLOW`. Users must then update the MODFLOW [*name file*](https://water.usgs.gov/ogw/modflow-nwt/MODFLOW-NWT-Guide/name_file.html) (.NAM) to point to the newly created recharge file.
+1. Computes *Significant Groundwater Recharge Areas* (SGRAs) and outputs to GIS raster file.
+
+
+> Script: `raven_output_to_rasters.ipynb`
+
+<br>
+
+### Converting MODFLOW outputs {#sec-MODFLOW-out}
+
+Lastly, once the MODFLOW model is complete, this script will take its output and summarize groundwater discharge to CH sub-watersheds and produce a GIS raster file.
+
+> Script: `modflow_output_drainage_summary.ipynb`
